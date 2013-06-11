@@ -79,7 +79,7 @@ printf( "\n" );
   }
 
 # error record is ambiguous -
-# there is a delimeter string included in the textual data somewhere
+# there is a delimiter string included in the textual data somewhere
 # this means that awk can't determine the field boundaries with certainty
   else if( NF != cntfields ) {
 if( _dbg_out_file != "" ) {
