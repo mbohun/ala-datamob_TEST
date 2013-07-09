@@ -266,41 +266,6 @@ else
 # write decimal & verbatim values
 printf( ",\"%s\",\"%s\"",	sdlon, slon ); 									#decimalLongitude,verbatimLongitude
 
-
-##########
-# old code - the old way allows for creeping errors from floating point arithmetic
-#:::::::::
-#slon = "";
-#ddlon = 0.0;
-#if( sGetValue("BioPreferredCentroidLongitude:1") != "" ) {
-#  slon = slon sRetPrint("BioPreferredCentroidLongitude:1") "° ";
-#  ddlon = sGetValue("BioPreferredCentroidLongitude:1");
-#}
-#if( sGetValue("BioPreferredCentroidLongitude:2") != "" ) {
-#  slon = slon sRetPrint("BioPreferredCentroidLongitude:2") "\' ";
-#  ddlon += sGetValue("BioPreferredCentroidLongitude:2") / 60;
-#}
-#if( sGetValue("BioPreferredCentroidLongitude:3") != "" ) {
-#  slon = slon sRetPrint("BioPreferredCentroidLongitude:3") "\\\" ";
-#  ddlon += sGetValue("BioPreferredCentroidLongitude:3") / 3600;
-#}
-## truncate to 3 decimal places
-#else if( ddlon != 0.0 ) {
-#}
-#if( sGetValue("BioPreferredCentroidLongitude:4") != "" ) {
-#  slon = slon sRetPrint("BioPreferredCentroidLongitude:4");
-#
-#  if( sGetValue("BioPreferredCentroidLatitude:4") == "W" )
-#  	ddlon -= (ddlon * 2);
-#}
-#if( (ddlon == 0.0) )
-#	sdlon = "";
-#else
-#	sdlon = sprintf( "%f", ddlon );
-#
-#printf( ",\"%s\",\"%s\"",	sdlon, slon ); $decimalLongitude,verbatimLongitude
-
-
 printf( ",\"%s\"",			sRetPrint("QuiLatLongDetermination:1") ); 		#verbatimCoordinateSystem
 
 slocremarks = "";
@@ -596,3 +561,4 @@ function sGetValue( sind ) {
 
 	return s;
 }
+
