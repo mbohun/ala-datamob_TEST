@@ -35,8 +35,8 @@
 
 clear
 
-# should be the full path to this script (note, no trailing '/')
-DWCDM=/amexport
+# should be the full path to directory containing this script (note, no trailing '/')
+DWCDM="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # the name of the single discipline export script in DWCDM
 EXSCRIPT=dwcdm2dsx.sh
 # the names of the awk scripts that do the ozcam-darwincore mapping
