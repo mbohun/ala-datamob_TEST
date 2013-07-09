@@ -87,7 +87,7 @@ printf( "\nWriting valid records as mapped" ) >> _dbg_out_file;
 }
 
 # print header [search file for '^print.*#([a-zA-Z,]*?)\r'
-printf( "\"institutionCode\",\"basisOfRecord\",\"dcterms:type\",\"collectionCode\",\"scientificName\",\"acceptedNameUsage\",\"nameAccordingTo\",\"typeStatus\",\"kingdom\",\"phylum\",\"class\",\"order\",\"family\",\"genus\",\"specificEpithet\",\"vernacularName\",\"verbatimTaxonRank\",\"identifiedBy\",\"dateIdentified\",\"identificationRemarks\",\"waterBody\",\"country\",\"stateProvince\",\"county\",\"verbatimLocality\",\"decimalLatitude\",\"verbatimLatitude\",\"decimalLongitude\",\"verbatimLongitude\",\"verbatimCoordinateSystem\",\"locationRemarks\",\"eventID\",\"eventDate\",\"verbatimEventDate\",\"eventTime\",\"dcterms:modified\",\"samplingProtocol\",\"habitat\",\"occurrenceID\",\"catalogNumber\",\"recordedBy\",\"otherCatalogNumbers\",\"sex\",\"preparations\",\"associatedMedia\",\"coordinateUncertaintyInMeters\"" );
+printf( "\"institutionCode\",\"basisOfRecord\",\"dcterms:type\",\"collectionCode\",\"scientificName\",\"acceptedNameUsage\",\"nameAccordingTo\",\"typeStatus\",\"kingdom\",\"phylum\",\"class\",\"order\",\"family\",\"genus\",\"specificEpithet\",\"vernacularName\",\"verbatimTaxonRank\",\"identifiedBy\",\"dateIdentified\",\"identificationRemarks\",\"waterBody\",\"country\",\"stateProvince\",\"county\",\"verbatimLocality\",\"decimalLatitude\",\"verbatimLatitude\",\"decimalLongitude\",\"verbatimLongitude\",\"verbatimCoordinateSystem\",\"locationRemarks\",\"eventID\",\"eventDate\",\"verbatimEventDate\",\"eventTime\",\"dcterms:modified\",\"samplingProtocol\",\"habitat\",\"occurrenceID\",\"catalogNumber\",\"recordedBy\",\"otherCatalogNumbers\",\"sex\",\"preparations\",\"associatedMedia\",\"verbatimUncertainty\",\"coordinateUncertaintyInMeters\"" );
 printf( "\n" );
 
   }
@@ -438,12 +438,13 @@ printf( ",\"%s\"", sRetPrint("MulMultiMediaRef:1") );						#associatedMedia
 #add Coordinate Uncetrtainly in Metres
 #Matthew 16 Nov 2012
 qrv1 = sGetValue("QuiRadiusVerbatim:1"); # this should be e.g. "10km-100km" or "0m-10m" or "unknown". We just want to keep the higher value (assume its the last number given)
+printf( ",\"%s\"", qrv1 )	# verbatim uncertainty
 gsub( /[kK][mM]/,"000",qrv1); #kilometers to meters
 #gsub( /m/,"",qrv1); # retain digits only
 sub( /[^0123456789]+$/,"",qrv1); #strip trailing nondigit characters
 sub( /^.*[^0123456789]+/,"",qrv1); #strip leading nondigit characters
 
-printf( ",\"%s\"", qrv1 )
+printf( ",\"%s\"", qrv1 )	# coordinate uncertainty in meters
 #printf( ",\"%s\"", gsub( /10/,"FOO",sRetPrint("QuiRadiusVerbatim:1") ) );
 
 
