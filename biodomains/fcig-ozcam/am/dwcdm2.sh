@@ -250,6 +250,10 @@ echo "#$0#$(date +%H:%M:%S)# 4 - bundling $DWCDM/$EXDIR with tar.gz"
 # must redirect /dev/null otherwise the output of the command will be in $tarret
 # (see 'http://ubuntuforums.org/archive/index.php/t-373657.html' for comments on status-test)
 
+  #set up the sftp dirs if they don't already exist
+  mkdir -vp "$SFTPSTAGE"
+  mkdir -vp "$SFTPHISTORY"
+
 tarret=$(tar -zcvf $SFTPSTAGE/$EXDIR.tar.gz $DWCDM/$EXDIR > /dev/null)$?
 
 if [ $tarret -ne 0 ]
@@ -271,10 +275,6 @@ else
 
   echo "#$0#$(date +%H:%M:%S)# 5 - sending all files in $SFTPSTAGE"
 
-  #set up the sftp dirs if they don't already exist
-  mkdir -vp "$SFTPSTAGE"
-  mkdir -vp "$SFTPHISTORY"
-
   #need to test for success/failure on sftp before moving data to history
   echo "put $SFTPSTAGE/*" | sftp $SFTPUSER@$SFTPIPADDR
 
@@ -289,4 +289,5 @@ else
   echo "#$0#$(date +%H:%M:%S)# finished"
 
 fi
+
 
