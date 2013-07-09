@@ -87,7 +87,7 @@ printf( "\nWriting valid records as mapped" ) >> _dbg_out_file;
 }
 
 # print header [search file for '^print.*#([a-zA-Z,]*?)\r'
-printf( "\"institutionCode\",\"basisOfRecord\",\"dcterms:type\",\"collectionCode\",\"scientificName\",\"acceptedNameUsage\",\"nameAccordingTo\",\"typeStatus\",\"kingdom\",\"phylum\",\"class\",\"order\",\"family\",\"genus\",\"specificEpithet\",\"vernacularName\",\"verbatimTaxonRank\",\"identifiedBy\",\"dateIdentified\",\"identificationRemarks\",\"waterBody\",\"country\",\"stateProvince\",\"county\",\"verbatimLocality\",\"decimalLatitude\",\"verbatimLatitude\",\"decimalLongitude\",\"verbatimLongitude\",\"verbatimCoordinateSystem\",\"locationRemarks\",\"eventID\",\"eventDate\",\"verbatimEventDate\",\"eventTime\",\"dcterms:modified\",\"samplingProtocol\",\"habitat\",\"occurrenceID\",\"catalogNumber\",\"recordedBy\",\"otherCatalogNumbers\",\"sex\",\"preparations\",\"associatedMedia\",\"verbatimUncertainty\",\"coordinateUncertaintyInMeters\"" );
+printf( "\"institutionCode\",\"basisOfRecord\",\"dcterms:type\",\"collectionCode\",\"scientificName\",\"acceptedNameUsage\",\"nameAccordingTo\",\"typeStatus\",\"kingdom\",\"phylum\",\"class\",\"order\",\"family\",\"genus\",\"specificEpithet\",\"vernacularName\",\"verbatimTaxonRank\",\"identifiedBy\",\"dateIdentified\",\"identificationRemarks\",\"waterBody\",\"country\",\"stateProvince\",\"county\",\"verbatimLocality\",\"decimalLatitude\",\"verbatimLatitude\",\"decimalLongitude\",\"verbatimLongitude\",\"coordinatePrecision\",\"verbatimCoordinateSystem\",\"locationRemarks\",\"eventID\",\"eventDate\",\"verbatimEventDate\",\"eventTime\",\"dcterms:modified\",\"samplingProtocol\",\"habitat\",\"occurrenceID\",\"catalogNumber\",\"recordedBy\",\"otherCatalogNumbers\",\"sex\",\"preparations\",\"associatedMedia\",\"verbatimUncertainty\",\"coordinateUncertaintyInMeters\"" );
 printf( "\n" );
 
   }
@@ -175,7 +175,7 @@ printf( ",\"%s\"",		sRetPrint("BioDistrictCountyShireLocal:1") ); 		#county
 printf( ",\"%s\"",		sRetPrint("QuiPreciseLocationLocal:1") ); 			#verbatimLocality
 
 
-slat = ""; sfmt = "";
+slat = ""; sfmtlat = "";
 ddlat = 0.0; ddd = 0.0; ddm = 0.0; dds = 0.0;
 if( sGetValue("BioPreferredCentroidLatitude:1") != "" ) {
   slat = slat sRetPrint("BioPreferredCentroidLatitude:1") "° ";
@@ -193,17 +193,17 @@ if( sGetValue("BioPreferredCentroidLatitude:3") != "" ) {
 # ... to 5 decimal places
 if( dds > 0 ) {
 	ddlat = ( ddd + (int((ddm * 100000) / 60) / 100000) + (int((dds * 100000) / 3600) / 100000) );
-	sfmt = "%3.5f";
+	sfmtlat = "%3.5f";
 }
 # ... to 3 decimal places
 else if( ddm > 0 ) {
 	ddlat = ( ddd + (int((ddm * 1000) / 60) / 1000) );
-	sfmt = "%3.3f";
+	sfmtlat = "%3.3f";
 }
 # ... to 1 decimal place
 else if( ddd > 0 ) {
 	ddlat = ( (int((ddd * 10)) / 10) );
-	sfmt = "%3.1f";
+	sfmtlat = "%3.1f";
 }
 # check to see if we're in the southern hemisphere...
 if( sGetValue("BioPreferredCentroidLatitude:4") != "" ) {
@@ -216,12 +216,11 @@ if( sGetValue("BioPreferredCentroidLatitude:4") != "" ) {
 if( (ddlat == 0.0) )
 	sdlat = "";
 else
-	sdlat = sprintf( sfmt, ddlat );
+	sdlat = sprintf( sfmtlat, ddlat );
 # write decimal & verbatim values
 printf( ",\"%s\",\"%s\"",	sdlat, slat ); 									#decimalLatitude,verbatimLatitude
 
-
-slon = ""; sfmt = "";
+slon = ""; sfmtlon = "";
 ddlon = 0.0; ddd = 0.0; ddm = 0.0; dds = 0.0;
 if( sGetValue("BioPreferredCentroidLongitude:1") != "" ) {
   slon = slon sRetPrint("BioPreferredCentroidLongitude:1") "° ";
@@ -239,17 +238,17 @@ if( sGetValue("BioPreferredCentroidLongitude:3") != "" ) {
 # ... to 5 decimal places
 if( dds > 0 ) {
 	ddlon = ( ddd + (int((ddm * 100000) / 60) / 100000) + (int((dds * 100000) / 3600) / 100000) );
-	sfmt = "%3.5f";
+	sfmtlon = "%3.5f";
 }
 # ... to 3 decimal places
 else if( ddm > 0 ) {
 	ddlon = ( ddd + (int((ddm * 1000) / 60) / 1000) );
-	sfmt = "%3.3f";
+	sfmtlon = "%3.3f";
 }
 # ... to 1 decimal place
 else if( ddd > 0 ) {
 	ddlon = ( (int((ddd * 10)) / 10) );
-	sfmt = "%3.1f";
+	sfmtlon = "%3.1f";
 }
 # check to see if we're in the southern hemisphere...
 if( sGetValue("BioPreferredCentroidLongitude:4") != "" ) {
@@ -262,11 +261,19 @@ if( sGetValue("BioPreferredCentroidLongitude:4") != "" ) {
 if( (ddlon == 0.0) )
 	sdlon = "";
 else
-	sdlon = sprintf( sfmt, ddlon );
+	sdlon = sprintf( sfmtlon, ddlon );
 # write decimal & verbatim values
-printf( ",\"%s\",\"%s\"",	sdlon, slon ); 									#decimalLongitude,verbatimLongitude
+printf( ",\"%s\",\"%s\"", sdlon, slon ); 									#decimalLongitude,verbatimLongitude
 
-printf( ",\"%s\"",			sRetPrint("QuiLatLongDetermination:1") ); 		#verbatimCoordinateSystem
+if ( (sfmtlat == "%3.5f") || (sfmtlon == "%3.5f") )  { coordpr = "0.00001" } 
+else if ( (sfmtlon == "%3.3f") || (sfmtlat == "%3.3f") ) { coordpr = "0.001" }
+else if ( (sfmtlat == "%3.1f") || (sfmtlon == "%3.1f") ) { coordpr = "0.1" }
+else coordpr = "";
+
+
+printf( ",\"%s\"", coordpr); 		#coordinatePrecision
+
+printf( ",\"%s\"", sRetPrint("QuiLatLongDetermination:1") ); 		#verbatimCoordinateSystem
 
 slocremarks = "";
 if( sGetValue("LocCollectionEventLocal:1") != "" )
