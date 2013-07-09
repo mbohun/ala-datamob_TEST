@@ -286,7 +286,7 @@ printf( ",\"%s\"", 			slocremarks ); 									#locationRemarks
 ###############
 seventid = "";
 if( sGetValue("ColCollectionEventsRef:1") != "" )
-  seventid = "ecollectionevents.irn:" sRetPrint("ColCollectionEventsRef:1");
+  seventid = "urn:australianmuseum.net.au:Events:" sRetPrint("ColCollectionEventsRef:1");
 printf( ",\"%s\"",												seventid );	#eventID
 
 sevtdate = "";
