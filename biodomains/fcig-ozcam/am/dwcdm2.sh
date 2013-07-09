@@ -106,7 +106,7 @@ else
   echo "#$0#$(date +%H:%M:%S)#  - if interested: Ctrl+C to terminate, then:"
   echo "#$0#$(date +%H:%M:%S)#       vi $DWCDM/disciplines-list"
 
-  echo distinct \(\(select CatDiscipline from ecatalogue\)\) | texql -R | tr -d \'\(\) >> "$DWCDM/disciplines-list"
+  echo distinct \(\(select SecDepartment_tab from ecatalogue\)\) | texql -R | sed "s/]//g;s/[()'\[]//g;s/|/\n/g" | sort -u | grep -v -e '`' -e "^$" -e "Evolutionary Biology Unit" -e "Archives" -e "Mineralogy" -e "Anthropology" -e "Admin" -e "Education" -e "Materials Conservation" -e "Palaeontology" -e "Archives" >> "$DWCDM/disciplines-list"
 
   echo "#$0#$(date +%H:%M:%S)# Check $DWCDM/disciplines-list before running $0 again"
 
