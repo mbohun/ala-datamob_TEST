@@ -104,14 +104,14 @@ printf(" ! %6d [%4d] - %.55s\n", NR, NF, $LINE) >> _dbg_out_file;
 printf( "\"AM\"" ); 														#institutionCode
 printf( ",\"PreservedSpecimen\"" ); 										#basisOfRecord
 printf( ",\"PhysicalObject\"" ); 											#dcterms:type
-printf( ",\"%s\"",      sRetPrint("CatDiscipline") ); 					#collectionCode
+printf( ",\"%s\"",      department ); 					#collectionCode
 printf( ",\"%s\"", sRetPrint("AdmDateModified") ); 							#dcterms:modified
 #old, non-compliant: printf( ",\"urn:catalog:AM:%s:%s\"", sRetPrint("CatDiscipline"), sRetPrint("CatRegNumber") );
 #agreed lsid-pattern: urn:lsid:ozcam.taxonomy.org.au:[Institution Code]:[Collection code]:[Basis of Record](optional):[Catalog Number]:[Version](optional)
-printf( ",\"urn:lsid:ozcam.taxonomy.org.au:AM:%s:%s\"", sRetPrint("CatDiscipline"), sRetPrint("CatRegNumber") );    #occurrenceID
+printf( ",\"urn:lsid:ozcam.taxonomy.org.au:AM:%s:%s\"", department, sRetPrint("CatRegNumber") );    #occurrenceID
 printf( ",\"%s\"", sRetPrint("CatRegNumber") ); 							#catalogNumber
 #old, without non-compliant lsid: printf( ",\"ecatalogue.irn:%s\"", sRetPrint("irn_1") );
-printf( ",\"ecatalogue.irn:%s; urn:catalog:AM:%s:%s\"", sRetPrint("irn_1"), sRetPrint("CatDiscipline"), sRetPrint("CatRegNumber") );  #otherCatalogNumbers
+printf( ",\"ecatalogue.irn:%s; urn:catalog:AM:%s:%s\"", sRetPrint("irn_1"), department, sRetPrint("CatRegNumber") );  #otherCatalogNumbers
 
 printf( "\n" );
 

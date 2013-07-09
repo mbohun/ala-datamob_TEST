@@ -43,7 +43,7 @@
 #    otherwise, if doing a full-export, push all IRNs to the next step
 #  reads - $DWCDMROOT/$TMPEXD/$FNAME_IRN$1
 #  write - $DWCDMROOT/$TMPEXD/$FNAME_IRNMOD$1
-#  write - $DWCDMROOT/$TMPEXD/$FNAME_EXID$1.csv.gz
+#  write - $DWCDMROOT/$TMPEXD/$1$FNAME_EXID.csv.gz
 #
 # step 3 for the filtered irn-only list, export data from emu:
 #    first, write a full record with header row, matching the first couple of irns
@@ -51,7 +51,7 @@
 #    then pipe to gzip for compression before writing to disc
 #  reads - $DWCDMROOT/$TMPEXD/$FNAME_IRNMOD$1
 #  write - $DWCDMROOT/$TMPEXD/$FNAME_HDR$1
-#  write - $DWCDMROOT/$TMPEXD/$FNAME_EXDATA$1.csv.gz
+#  write - $DWCDMROOT/$TMPEXD/$1$FNAME_EXDATA.csv.gz
 #
 # finish - write the discipline to dwcdm_finish
 #  write - $DWCDMROOT/$TMPEXD/dwcdm_finish
@@ -65,8 +65,8 @@ EXAWKFULL=ozdc_full.awk
 FNAME_IRN=irn-
 FNAME_HDR=hdr-
 FNAME_IRNMOD=irn-mod-
-FNAME_EXID=dwc-id-
-FNAME_EXDATA=dwc-data-
+FNAME_EXID=-dwcid
+FNAME_EXDATA=-dwcdata
 
 DWCDMROOT=$2
 
@@ -141,19 +141,19 @@ echo "#$0#$(date +%H:%M:%S)# 2 - writing '$DWCDMROOT/$TMPEXD/$FNAME_IRNMOD$1'"
 #
 cat "$FNAME_IRN$1" | awk -F"," 'BEGIN{cnt=-1}; { if(-1 == cnt) cnt=0; else { cnt++; idmparts = split($4,arrdm,"/"); if(3 == idmparts) { scmd = "date -d \"" arrdm[3] "/" arrdm[2] "/" arrdm[1] " " $5 "\" +%s 2>/dev/null"; printf($1 " "); (ssecs = system(scmd)); } } };' |  awk -v ssince="$3" -v dtsince=$(date -d "$3" +%s 2>/dev/null) -F' ' 'BEGIN{if(!dtsince || ("" == ssince))dtsince=0;};{if($2>dtsince) print $1; };' > "$FNAME_IRNMOD$1"
 
-echo "#$0#$(date +%H:%M:%S)# 2 - writing '$DWCDMROOT/$TMPEXD/$FNAME_EXID$1.csv.gz'"
+echo "#$0#$(date +%H:%M:%S)# 2 - writing '$DWCDMROOT/$TMPEXD/$1$FNAME_EXID.csv.gz'"
 
-cat "$FNAME_IRN$1" | awk -F"," -v _dbg_out_file="$DWCDMROOT/$TMPEXD/$EXAWKID.log" -f "$DWCDMROOT/$EXAWKID" | gzip -8 >> "$FNAME_EXID$1.csv.gz"
+cat "$FNAME_IRN$1" | awk -F"," -v department="$1" -v _dbg_out_file="$DWCDMROOT/$TMPEXD/$EXAWKID.log" -f "$DWCDMROOT/$EXAWKID" | gzip -8 >> "$1$FNAME_EXID.csv.gz"
 
 
 ##### 3 #####
 # for the filtered irn-only list, export data from emu
 
-echo "#$0#$(date +%H:%M:%S)# 3 - writing '$DWCDMROOT/$TMPEXD/$FNAME_EXDATA$1.gz'"
+echo "#$0#$(date +%H:%M:%S)# 3 - writing '$DWCDMROOT/$TMPEXD/$1$FNAME_EXDATA.gz'"
 
 head -n 10 "$FNAME_IRNMOD$1" | texexport -k- -fdelimited -ms"+|" -md"" -mc ecatalogue > "$FNAME_HDR$1"
 
-cat "$FNAME_IRNMOD$1" | texexport -k- -fdelimited -ms"+|" -md"" -mc ecatalogue | awk -F"[+][|]" -v _dbg_out_file="$DWCDMROOT/$TMPEXD/$EXAWKFULL.log" -f "$DWCDMROOT/$EXAWKFULL" | gzip -8 >> "$FNAME_EXDATA$1.csv.gz"
+cat "$FNAME_IRNMOD$1" | texexport -k- -fdelimited -ms"+|" -md"" -mc ecatalogue | awk -F"[+][|]" -v department="$1" -v _dbg_out_file="$DWCDMROOT/$TMPEXD/$EXAWKFULL.log" -f "$DWCDMROOT/$EXAWKFULL" | gzip -8 >> "$1$FNAME_EXDATA.csv.gz"
 
 echo "#$0#$(date +%H:%M:%S)# 3 - finished"
 

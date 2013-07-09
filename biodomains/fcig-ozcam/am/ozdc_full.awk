@@ -118,7 +118,7 @@ printf(" ! %6d [%4d] - %.55s\n", NR, NF, $LINE) >> _dbg_out_file;
 printf( "\"AM\"" ); 														#institutionCode
 printf( ",\"PreservedSpecimen\"" ); 										#basisOfRecord
 printf( ",\"PhysicalObject\"" ); 											#dcterms:type
-printf( ",\"%s\"",      sRetPrint("CatDiscipline:1") ); 					#collectionCode
+printf( ",\"%s\"",      department ); 					#collectionCode
 
 
 ###############
@@ -427,10 +427,10 @@ printf( ",\"%s\"", sRetPrint("LocCollectionMethod:1") ); 					#samplingProtocol
 printf( ",\"%s\"", sRetPrint("BioMicrohabitatDescription:1") ); 			#habitat
 #old, non-compliant: printf( ",\"urn:catalog:AM:%s:%s\"", sRetPrint("CatDiscipline:1"), sRetPrint("CatRegNumber:1") );
 #agreed lsid-pattern: urn:lsid:ozcam.taxonomy.org.au:[Institution Code]:[Collection code]:[Basis of Record](optional):[Catalog Number]:[Version](optional)
-printf( ",\"urn:lsid:ozcam.taxonomy.org.au:AM:%s:%s\"", sRetPrint("CatDiscipline:1"), sRetPrint("CatRegNumber:1") ); #occurrenceID
+printf( ",\"urn:lsid:ozcam.taxonomy.org.au:AM:%s:%s\"", department, sRetPrint("CatRegNumber:1") ); #occurrenceID
 printf( ",\"%s\"", sRetPrint("CatRegNumber:1") ); 							#catalogNumber
 printf( ",\"%s\"", sRetPrint("BioParticipantLocal:1") ); 					#recordedBy
-printf( ",\"ecatalogue.irn:%s; urn:catalog:AM:%s:%s\"", sRetPrint("irn:1"), sRetPrint("CatDiscipline:1"), sRetPrint("CatRegNumber:1") );  #otherCatalogNumbers
+printf( ",\"ecatalogue.irn:%s; urn:catalog:AM:%s:%s\"", sRetPrint("irn:1"), department, sRetPrint("CatRegNumber:1") );  #otherCatalogNumbers
 printf( ",\"%s\"", sRetPrint("ZooSex:1") ); 								#sex
 
 sprep = "";
