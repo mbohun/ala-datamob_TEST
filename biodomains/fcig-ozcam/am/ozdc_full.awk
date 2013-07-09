@@ -124,44 +124,56 @@ printf( ",\"%s\"",      department ); 					#collectionCode
 ###############
 # WHAT ########
 ###############
-printf( ",\"%s\"", 		sRetPrint("IdeScientificNameLocal:1") ); 			#scientificName
-printf( ",\"%s\"", 		sRetPrint("IdeQualifiedName:1") ); 					#acceptedNameUsage
-printf( ",\"%s\"", 		sRetPrint("IdeAuthorStringLocal:1") ); 				#nameAccordingTo
-printf( ",\"%s\"", 		sRetPrint("CitTypeStatus:1") ); 					#typeStatus
 
-printf( ",\"%s\"", 		sRetPrint("IdeKingdomLocal:1") ); 					#kingdom
-printf( ",\"%s\"", 		sRetPrint("IdePhylumLocal:1") ); 					#phylum
-printf( ",\"%s\"", 		sRetPrint("IdeClassLocal:1") ); 					#class
-printf( ",\"%s\"", 		sRetPrint("IdeOrderLocal:1") ); 					#order
-printf( ",\"%s\"", 		sRetPrint("IdeFamilyLocal:1") ); 					#family
-printf( ",\"%s\"", 		sRetPrint("IdeGenusLocal:1") ); 					#genus
-printf( ",\"%s\"", 		sRetPrint("IdeSpeciesLocal:1") ); 					#specificEpithet
+# there can be multiple identifications - need to choose the one which is current (IdeCurrentId is "Yes")
+# and ignore historical identifications e.g. if IdeCurrentId:6 is "Yes" then set ideindex to "6" and
+# use this to retrieve data from the correct identification fields (IdeScientificNameLocal, etc)
+# As of May 2013 there are 20 IdeCurrentId fields
+ideindex = "1"
+for(i=1;i<21;i++) {
+  idecurrent = "IdeCurrentId:" i;
+  if (sRetPrint(idecurrent) == "Yes") {ideindex=i;break}
+}
+
+
+printf( ",\"%s\"", 		sRetPrint("IdeScientificNameLocal:" ideindex ) ); 			#scientificName
+printf( ",\"%s\"", 		sRetPrint("IdeQualifiedName:"ideindex ) ); 					#acceptedNameUsage
+printf( ",\"%s\"", 		sRetPrint("IdeAuthorStringLocal:" ideindex ) ); 				#nameAccordingTo
+printf( ",\"%s\"", 		sRetPrint("CitTypeStatus1:") ); 					#typeStatus
+
+printf( ",\"%s\"", 		sRetPrint("IdeKingdomLocal:" ideindex ) ); 					#kingdom
+printf( ",\"%s\"", 		sRetPrint("IdePhylumLocal:" ideindex ) ); 					#phylum
+printf( ",\"%s\"", 		sRetPrint("IdeClassLocal:" ideindex ) ); 					#class
+printf( ",\"%s\"", 		sRetPrint("IdeOrderLocal:1" ideindex ) ); 					#order
+printf( ",\"%s\"", 		sRetPrint("IdeFamilyLocal:1" ideindex ) ); 					#family
+printf( ",\"%s\"", 		sRetPrint("IdeGenusLocal:1" ideindex ) ); 					#genus
+printf( ",\"%s\"", 		sRetPrint("IdeSpeciesLocal:1" ideindex ) ); 					#specificEpithet
 
 #sGetValue("ConKindOfObject:1")
 printf( ",\"%s\"", 		sRetPrint("QuiTaxonomyCommonName:1") ); 			#vernacularName
-printf( ",\"%s\"", 		sRetPrint("IdeQualifierRank:1") ); 					#verbatimTaxonRank
+printf( ",\"%s\"", 		sRetPrint("IdeQualifierRank:1" ideindex ) ); 					#verbatimTaxonRank
 
-printf( ",\"%s\"", 		sRetPrint("IdeIdentifiedByLocal:1") ); 				#identifiedBy
+printf( ",\"%s\"", 		sRetPrint("IdeIdentifiedByLocal:1" ideindex ) ); 				#identifiedBy
 
 sdateid = "";
-if( sGetValue("IdeDateIdentified0:1") != "" ) {
-  sdateid = sRetPrint("IdeDateIdentified0:1");
-  if( sGetValue("IdeDateIdentified0:2") != "" ) {
-    sdateid = sdateid "-" sRetPrint("IdeDateIdentified0:2");
-    if( sGetValue("IdeDateIdentified0:3") != "" ) {
-      sdateid = sdateid "-" sRetPrint("IdeDateIdentified0:3");
+if( sGetValue("IdeDateIdentified" ideindex ":1") != "" ) {
+  sdateid = sRetPrint("IdeDateIdentified" ideindex ":1");
+  if( sGetValue("IdeDateIdentified" ideindex ":2") != "" ) {
+    sdateid = sdateid "-" sRetPrint("IdeDateIdentified" ideindex ":2");
+    if( sGetValue("IdeDateIdentified" ideindex ":3") != "" ) {
+      sdateid = sdateid "-" sRetPrint("IdeDateIdentified" ideindex ":3");
     }
   }
 }
 printf( ",\"%s\"", 		sdateid ); 											#dateIdentified
 
 sidremarks = "";
-if( sGetValue("IdeConfidence:1") != "" )
-  sidremarks = sidremarks "ecatalogue.IdeConfidence: " sRetPrint("IdeConfidence:1", 1) "; ";
+if( sGetValue("IdeConfidence:" ideindex ) != "" )
+  sidremarks = sidremarks "ecatalogue.IdeConfidence: " sRetPrint("IdeConfidence:" ideindex, 1) "; ";
 if( sGetValue("IdeSpecimenQuality:1") != "" )
   sidremarks = sidremarks "ecatalogue.IdeSpecimenQuality: " sRetPrint("IdeSpecimenQuality:1", 1) "; ";
-if( sGetValue("IdeComments:1") != "" )
-  sidremarks = sidremarks "ecatalogue.IdeComments: " sRetPrint("IdeComments:1", 1) "; ";
+if( sGetValue("IdeComments:" ideindex) != "" )
+  sidremarks = sidremarks "ecatalogue.IdeComments: " sRetPrint("IdeComments:" ideindex, 1) "; ";
 printf( ",\"%s\"",		sidremarks ); 										#identificationRemarks
 
 
