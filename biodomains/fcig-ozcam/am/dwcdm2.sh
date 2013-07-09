@@ -89,7 +89,7 @@ exec 2> >(tee -a $DWCDM/logerr.dwcdm2)
 #   modify this file, commenting out lines with a leading '#'
 # write "$DWCDM/disciplines-list"
 
-if [ $DWCDM/disciplines-list ]
+if [ -f $DWCDM/disciplines-list ]
   then echo "#$0#$(date +%H:%M:%S)# $DWCDM/disciplines-list exists - using this list"
 
 else
