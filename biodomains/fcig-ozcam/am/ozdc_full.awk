@@ -294,9 +294,9 @@ sverbevtdate = "";
 if( sGetValue("LocDateCollectedFrom:1") != "" ) {
   sevtdate = sRetPrint("LocDateCollectedFrom:1");
   if( sGetValue("LocDateCollectedFrom:2") != "" ) {
-    sevtdate = sevtdate "-" sRetPrint("LocDateCollectedFrom:2");
+    sevtdate = sevtdate "-" sprintf("%02d", sRetPrint("LocDateCollectedFrom:2"));
     if( sGetValue("LocDateCollectedFrom:3") != "" ) {
-      sevtdate = sevtdate "-" sRetPrint("LocDateCollectedFrom:3");
+      sevtdate = sevtdate "-" sprintf("%02d", sRetPrint("LocDateCollectedFrom:3"));
 
       bdelim = 0;
 		if( (sGetValue("LocDateCollectedTo:1") != "") && (sGetValue("LocDateCollectedTo:1") != sGetValue("LocDateCollectedFrom:1")) ) {
@@ -306,19 +306,19 @@ if( sGetValue("LocDateCollectedFrom:1") != "" ) {
 		if( (sGetValue("LocDateCollectedTo:2") != "") && (sGetValue("LocDateCollectedTo:2") != sGetValue("LocDateCollectedFrom:2")) ) {
 			if( bdelim == 0 ) {
 				bdelim = 1;
-				sevtdate = sevtdate "/" sRetPrint("LocDateCollectedTo:2");
+				sevtdate = sevtdate "/" sprintf("%02d", sRetPrint("LocDateCollectedTo:2"));
 			}
 			else {
-				sevtdate = sevtdate "-" sRetPrint("LocDateCollectedTo:2");
+				sevtdate = sevtdate "-" sprintf("%02d", sRetPrint("LocDateCollectedTo:2"));
 			}
 		}
 		if( (sGetValue("LocDateCollectedTo:3") != "") && (sGetValue("LocDateCollectedTo:3") != sGetValue("LocDateCollectedFrom:3")) ) {
 			if( bdelim == 0 ) {
 				bdelim = 1;
-				sevtdate = sevtdate "/" sRetPrint("LocDateCollectedTo:3");
+				sevtdate = sevtdate "/" sprintf("%02d", sRetPrint("LocDateCollectedTo:3"));
 			}
 			else {
-				sevtdate = sevtdate "-" sRetPrint("LocDateCollectedTo:3");
+				sevtdate = sevtdate "-" sprintf("%02d", sRetPrint("LocDateCollectedTo:3"));
 			}
 		}
     }
