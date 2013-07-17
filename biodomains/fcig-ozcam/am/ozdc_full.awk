@@ -139,7 +139,32 @@ for(i=1;i<21;i++) {
 printf( ",\"%s\"", 		sRetPrint("IdeScientificNameLocal:" ideindex ) ); 			#scientificName
 printf( ",\"%s\"", 		sRetPrint("IdeQualifiedName:"ideindex ) ); 					#acceptedNameUsage
 printf( ",\"%s\"", 		sRetPrint("IdeAuthorStringLocal:" ideindex ) ); 				#nameAccordingTo
-printf( ",\"%s\"", 		sRetPrint("CitTypeStatus1:") ); 					#typeStatus
+
+
+# instead of using CitTypeStatus1 use concatenated CitTypeStatusCitationsCombine fields
+# As of July 2013 there are 40 CitTypeStatusCitationsCombine fields (mostly empty, some with duplicate values)
+# e.g.:
+# CitTypeStatusCitationsCombine:1=10024300: Syntypes: Epigrus protractus Hedley, 1904 : : : Gastropoda : Mollusca
+# want also to remove the leading numeric id and colon (i.e. "10024300: ")
+
+ctsindex = "1"
+for(i=1;i<40;i++) {
+  ctscurrent = "CitTypeStatusCitationsCombine:" i;
+  cts = sRetPrint(ctscurrent);
+  if ( cts != "") { 
+    sub( /^[0123456789]+: /,"",cts); #strip leading cruft
+    ctsarray[cts] = 1;
+  }
+}
+typestatus = "";
+for ( cts in ctsarray ) {
+  typestatus = (typestatus cts ";") ;
+}
+sub( /;$/,"",typestatus); #strip trailing semicolon
+printf( ",\"%s\"", 		typestatus ); 					#typeStatus
+
+
+
 
 printf( ",\"%s\"", 		sRetPrint("IdeKingdomLocal:" ideindex ) ); 					#kingdom
 printf( ",\"%s\"", 		sRetPrint("IdePhylumLocal:" ideindex ) ); 					#phylum
