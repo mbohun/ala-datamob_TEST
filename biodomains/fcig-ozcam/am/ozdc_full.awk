@@ -152,8 +152,10 @@ for(i=1;i<40;i++) {
   ctscurrent = "CitTypeStatusCitationsCombine:" i;
   cts = sRetPrint(ctscurrent);
   if ( cts != "") { 
-    sub( /^[0123456789]+: /,"",cts); #strip leading cruft
-    ctsarray[cts] = 1;
+    sub( /^[0123456789]+: +/,"",cts); #strip leading cruft
+    if ( cts !~ /^:/ ) { # want the first colon-delimited field to be a string (like "holotype") so disregard if empty
+      ctsarray[cts] = 1;
+    }
   }
 }
 typestatus = "";
