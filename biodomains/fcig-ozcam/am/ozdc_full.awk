@@ -160,6 +160,7 @@ typestatus = "";
 for ( cts in ctsarray ) {
   typestatus = (typestatus cts ";") ;
 }
+delete ctsarray;
 sub( /;$/,"",typestatus); #strip trailing semicolon
 printf( ",\"%s\"", 		typestatus ); 					#typeStatus
 
