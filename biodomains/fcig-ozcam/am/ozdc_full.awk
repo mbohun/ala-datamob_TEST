@@ -172,17 +172,17 @@ printf( ",\"%s\"", 		typestatus ); 					#typeStatus
 printf( ",\"%s\"", 		sRetPrint("IdeKingdomLocal:" ideindex ) ); 					#kingdom
 printf( ",\"%s\"", 		sRetPrint("IdePhylumLocal:" ideindex ) ); 					#phylum
 printf( ",\"%s\"", 		sRetPrint("IdeClassLocal:" ideindex ) ); 					#class
-printf( ",\"%s\"", 		sRetPrint("IdeOrderLocal:1" ideindex ) ); 					#order
-printf( ",\"%s\"", 		sRetPrint("IdeFamilyLocal:1" ideindex ) ); 					#family
-printf( ",\"%s\"", 		sRetPrint("IdeGenusLocal:1" ideindex ) ); 					#genus
-printf( ",\"%s\"", 		sRetPrint("IdeSpeciesLocal:1" ideindex ) ); 					#specificEpithet
-
+printf( ",\"%s\"", 		sRetPrint("IdeOrderLocal:" ideindex ) ); 					#order
+printf( ",\"%s\"", 		sRetPrint("IdeFamilyLocal:" ideindex ) ); 					#family
+printf( ",\"%s\"", 		sRetPrint("IdeGenusLocal:" ideindex ) ); 					#genus
+printf( ",\"%s\"", 		sRetPrint("IdeSpeciesLocal:" ideindex ) ); 					#specificEpithet
 #sGetValue("ConKindOfObject:1")
 printf( ",\"%s\"", 		sRetPrint("QuiTaxonomyCommonName:1") ); 			#vernacularName
-printf( ",\"%s\"", 		sRetPrint("IdeQualifierRank:1" ideindex ) ); 					#verbatimTaxonRank
+printf( ",\"%s\"", 		sRetPrint("IdeQualifierRank:" ideindex ) ); 					#verbatimTaxonRank
 
-printf( ",\"%s\"", 		sRetPrint("IdeIdentifiedByLocal:1" ideindex ) ); 				#identifiedBy
+printf( ",\"%s\"", 		sRetPrint("IdeIdentifiedByLocal:" ideindex ) ); 				#identifiedBy
 
+#choose e.g. between IdeDateIdentified2:1, IdeDateIdentified2:2 and IdeDateIdentified2:3
 sdateid = "";
 if( sGetValue("IdeDateIdentified" ideindex ":1") != "" ) {
   sdateid = sRetPrint("IdeDateIdentified" ideindex ":1");
