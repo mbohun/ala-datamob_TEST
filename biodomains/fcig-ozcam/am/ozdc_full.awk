@@ -132,7 +132,7 @@ printf( ",\"%s\"",      department ); 					#collectionCode
 ideindex = "1"
 for(i=1;i<21;i++) {
   idecurrent = "IdeCurrentId:" i;
-  if (sRetPrint(idecurrent) == "Yes") {ideindex=i;break}
+  if (sRetPrint(idecurrent) == "Yes") {ideindex=i;dateideindex=i-1;break}
 }
 
 
@@ -182,14 +182,17 @@ printf( ",\"%s\"", 		sRetPrint("IdeQualifierRank:" ideindex ) ); 					#verbatimT
 
 printf( ",\"%s\"", 		sRetPrint("IdeIdentifiedByLocal:" ideindex ) ); 				#identifiedBy
 
-#choose e.g. between IdeDateIdentified2:1, IdeDateIdentified2:2 and IdeDateIdentified2:3
+# the date identified field names have the form IdeDateIdentifiedX:[123]
+# where 1,2,3 are I think year, month, date
+# and X is the index we use for the current identification
+# unbelievably though, X here is zero based, so we need to subtract 1 from ideindex to get dateideindex (above)
 sdateid = "";
-if( sGetValue("IdeDateIdentified" ideindex ":1") != "" ) {
-  sdateid = sRetPrint("IdeDateIdentified" ideindex ":1");
-  if( sGetValue("IdeDateIdentified" ideindex ":2") != "" ) {
-    sdateid = sdateid "-" sRetPrint("IdeDateIdentified" ideindex ":2");
+if( sGetValue("IdeDateIdentified" dateideindex ":1") != "" ) {
+  sdateid = sRetPrint("IdeDateIdentified" dateideindex ":1");
+  if( sGetValue("IdeDateIdentified" dateideindex ":2") != "" ) {
+    sdateid = sdateid "-" sRetPrint("IdeDateIdentified" dateideindex ":2");
     if( sGetValue("IdeDateIdentified" ideindex ":3") != "" ) {
-      sdateid = sdateid "-" sRetPrint("IdeDateIdentified" ideindex ":3");
+      sdateid = sdateid "-" sRetPrint("IdeDateIdentified" dateideindex ":3");
     }
   }
 }
