@@ -149,11 +149,30 @@ cat "$FNAME_IRN$1" | awk -F"," -v department="$1" -v _dbg_out_file="$DWCDMROOT/$
 ##### 3 #####
 # for the filtered irn-only list, export data from emu
 
-echo "#$0#$(date +%H:%M:%S)# 3 - writing '$DWCDMROOT/$TMPEXD/$1$FNAME_EXDATA.gz'"
+echo "#$0#$(date +%H:%M:%S)# 3 - writing '$DWCDMROOT/$TMPEXD/$1$FNAME_EXDATA.csv'"
 
 head -n 10 "$FNAME_IRNMOD$1" | texexport -k- -fdelimited -ms"+|" -md"" -mc ecatalogue > "$FNAME_HDR$1"
 
-cat "$FNAME_IRNMOD$1" | texexport -k- -fdelimited -ms"+|" -md"" -mc ecatalogue | awk -F"[+][|]" -v department="$1" -v _dbg_out_file="$DWCDMROOT/$TMPEXD/$EXAWKFULL.log" -f "$DWCDMROOT/$EXAWKFULL" | gzip -8 >> "$1$FNAME_EXDATA.csv.gz"
+cat "$FNAME_IRNMOD$1" | texexport -k- -fdelimited -ms"+|" -md"" -mc ecatalogue | awk -F"[+][|]" -v department="$1" -v _dbg_out_file="$DWCDMROOT/$TMPEXD/$EXAWKFULL.log" -f "$DWCDMROOT/$EXAWKFULL" > "$1$FNAME_EXDATA.csv"
+
+#check all fields have got some data:
+#this is slow so make it optional
+if  test "x" != "x"$DO_EXDATA_CHECK
+then
+	echo "#$0#$(date +%H:%M:%S)# 3 - checking '$DWCDMROOT/$TMPEXD/$1$FNAME_EXDATA.csv'"
+	export NCOL=`head -1 "$1$FNAME_EXDATA.csv" | awk -F'","' '{print NF}'`
+	export HDRS=('dummy' `head -1 "$1$FNAME_EXDATA.csv" | sed 's/^"//;s/","/ /g;s/"$//'`)
+	echo i,field,nonempty,distinct
+	for i in $(seq 1 $NCOL)
+	do
+	  NONEMPTY=`sed 1d "$1$FNAME_EXDATA.csv" | awk -F'","' '{print $'$i'}' | grep -v "^$" | wc -l`
+	  DISTINCT=`sed 1d "$1$FNAME_EXDATA.csv" | awk -F'","' '{print $'$i'}' | grep -v "^$" | sort -u | wc -l`
+	  echo ${i},${HDRS[$i]},${NONEMPTY},${DISTINCT}
+	done
+fi
+
+echo "#$0#$(date +%H:%M:%S)# 3 - compressing to '$DWCDMROOT/$TMPEXD/$1$FNAME_EXDATA.gz'"
+gzip -8 "$1$FNAME_EXDATA.csv"
 
 echo "#$0#$(date +%H:%M:%S)# 3 - finished"
 
