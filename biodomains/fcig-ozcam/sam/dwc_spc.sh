@@ -23,6 +23,7 @@
 # $1 - null/'' for full, 'yyyy/MM/dd hh:mm:ss ...' for only records since this emu local time, eg: '2011/04/07'
 # $1 - (note, format must be a valid arg for: date -d "<DATE/TIME SINCE>" +%s)
 #
+# v10: 20130130: bk - modified sftp command to send only current file; other files in $SFTPSTAGE ignored
 # v9: 20111102: bk - re-joined am fork: better comments & logging, opensource-licence
 # v8: 20110913: bk - logging, subscript errors, move to new dir
 # v7: 20110824: bk - branched to mv
@@ -274,10 +275,11 @@ else
   ##### 5 #####
   # send all exports
  
-  echo "#$0#$(date +%H:%M:%S)# 5 - sending all files in $SFTPSTAGE"
+  echo "#$0#$(date +%H:%M:%S)# 5 - sending $EXDIR.tar.gz file from $SFTPSTAGE"
 
   #need to test for success/failure on sftp before moving data to history
-  echo "put $SFTPSTAGE/*" | sftp $SFTPUSER@$SFTPIPADDR
+  echo "put $SFTPSTAGE/$EXDIR.tar.gz" | sftp $SFTPUSER@$SFTPIPADDR
+  #old: causing an error? echo "put $SFTPSTAGE/*" | sftp $SFTPUSER@$SFTPIPADDR
 
 
   ##### 6 #####
@@ -285,7 +287,7 @@ else
 
   echo "#$0#$(date +%H:%M:%S)# 6 - moving all files in $SFTPHISTORY"
 
-  mv "$SFTPSTAGE/*" "$SFTPHISTORY"
+  mv "$SFTPSTAGE/$EXDIR.tar.gz" "$SFTPHISTORY"
 
   echo "#$0#$(date +%H:%M:%S)# finished"
 

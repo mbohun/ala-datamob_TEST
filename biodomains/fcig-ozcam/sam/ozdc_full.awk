@@ -18,6 +18,7 @@
 # CAUTION : field names are not quite the same as in ozdc_id.awk
 # reason is, source of data are two separate commands - beware of copy & paste
 #
+# v12: 20130131: bk - added 'coordinate precision' and fixed 'event date' leading zero in months
 # v11: 20121130: bk - checked for null regnumber
 # v10: 20121121: bk - added logic to properly handle '.SUFFIX' in lsid
 # v9: 20120426: bk - updated 'occurrence id' to fcig-agreed lsid pattern & populated non-dwc terms 'principal record' & 'parent record' (see: http://code.google.com/p/ala-datamob/wiki/RelatedRecords)
@@ -96,9 +97,8 @@ printf( "\nWriting valid records as mapped... " ) >> _dbg_out_file;
 }
 
 # print header [search file for '^print.*#([a-zA-Z,]*?)\r'
-#printf( "\"institutionCode\",\"basisOfRecord\",\"dcterms:type\",\"collectionCode\",\"scientificName\",\"acceptedNameUsage\",\"nameAccordingTo\",\"typeStatus\",\"kingdom\",\"phylum\",\"class\",\"order\",\"family\",\"genus\",\"specificEpithet\",\"vernacularName\",\"verbatimTaxonRank\",\"identifiedBy\",\"dateIdentified\",\"identificationRemarks\",\"waterBody\",\"country\",\"stateProvince\",\"county\",\"verbatimLocality\",\"decimalLatitude\",\"verbatimLatitude\",\"decimalLongitude\",\"verbatimLongitude\",\"verbatimCoordinateSystem\",\"locationRemarks\",\"eventID\",\"eventDate\",\"verbatimEventDate\",\"eventTime\",\"dcterms:modified\",\"samplingProtocol\",\"habitat\",\"occurrenceID\",\"catalogNumber\",\"recordedBy\",\"otherCatalogNumbers\",\"sex\",\"preparations\",\"associatedMedia\"" );
 
-printf( "\"institutionCode\",\"basisOfRecord\",\"dcterms:type\",\"collectionCode\",\"scientificName\",\"acceptedNameUsage\",\"nameAccordingTo\",\"typeStatus\",\"phylum\",\"class\",\"order\",\"family\",\"genus\",\"specificEpithet\",\"infraspecificEpithet\",\"vernacularName\",\"verbatimTaxonRank\",\"identifiedBy\",\"dateIdentified\",\"identificationRemarks\",\"waterBody\",\"country\",\"stateProvince\",\"county\",\"verbatimLocality\",\"decimalLatitude\",\"verbatimLatitude\",\"decimalLongitude\",\"verbatimLongitude\",\"verbatimCoordinateSystem\",\"locationRemarks\",\"eventID\",\"eventDate\",\"verbatimEventDate\",\"eventTime\",\"dcterms:modified\",\"samplingProtocol\",\"habitat\",\"occurrenceID\",\"catalogNumber\",\"occurrenceRemarks\",\"recordedBy\",\"individualCount\",\"otherCatalogNumbers\",\"sex\",\"lifeStage\",\"preparations\",\"associatedSequences\",\"principalRecord\"" );
+printf( "\"institutionCode\",\"basisOfRecord\",\"dcterms:type\",\"collectionCode\",\"scientificName\",\"acceptedNameUsage\",\"nameAccordingTo\",\"typeStatus\",\"phylum\",\"class\",\"order\",\"family\",\"genus\",\"specificEpithet\",\"infraspecificEpithet\",\"vernacularName\",\"verbatimTaxonRank\",\"identifiedBy\",\"dateIdentified\",\"identificationRemarks\",\"waterBody\",\"country\",\"stateProvince\",\"county\",\"verbatimLocality\",\"decimalLatitude\",\"verbatimLatitude\",\"decimalLongitude\",\"verbatimLongitude\",\"coordinatePrecision\",\"verbatimCoordinateSystem\",\"locationRemarks\",\"eventID\",\"eventDate\",\"verbatimEventDate\",\"eventTime\",\"dcterms:modified\",\"samplingProtocol\",\"habitat\",\"occurrenceID\",\"catalogNumber\",\"occurrenceRemarks\",\"recordedBy\",\"individualCount\",\"otherCatalogNumbers\",\"sex\",\"lifeStage\",\"preparations\",\"associatedSequences\",\"principalRecord\"" );
 
 printf( "\n" );
 
@@ -161,7 +161,7 @@ if( sGetValue("IdeCurrentScientificNameLocal:1") != "" )
   ssciname = sRetPrint("IdeCurrentScientificNameLocal:1");
 # ... 
 else if( sGetValue("IdeScientificNameLocal:1") != "" )
-  ssciname = sRetPrint("IdeCurrentScientificNameLocal:1");
+  ssciname = sRetPrint("IdeScientificNameLocal:1");
 # ... this one is clearly a concatenation of the taxonomy
 else if( sGetValue("IdeAcceptedSummaryDataLocal:1") != "" )
   ssciname = sRetPrint("IdeAcceptedSummaryDataLocal:1");
@@ -222,8 +222,9 @@ printf( ",\"%s\"",      sRetPrint("") );                                     #co
 printf( ",\"%s\"",      sRetPrint("BioPreciseLocationLocal:1") );            #verbatimLocality
 
 
-slat = ""; sfmt = "";
-ddlat = 0.0; ddd = 0.0; ddm = 0.0; dds = 0.0;
+sprec = ""; slat = ""; sfmt = "";
+#default coordinate precision (ddprec) to one degree, which is quite coarse
+ddprec = 1; ddlat = 0.0; ddd = 0.0; ddm = 0.0; dds = 0.0;
 if( sGetValue("BioCentroidLatitudeLocal0:1") != "" ) {
   slat = slat sRetPrint("BioCentroidLatitudeLocal0:1") "° ";
   ddd = sGetValue("BioCentroidLatitudeLocal0:1");
@@ -241,16 +242,19 @@ if( sGetValue("BioCentroidLatitudeLocal0:3") != "" ) {
 if( dds > 0 ) {
   ddlat = ( ddd + (int((ddm * 100000) / 60) / 100000) + (int((dds * 100000) / 3600) / 100000) );
   sfmt = "%3.5f";
+  ddprec = 0.00001;
 }
 # ... to 3 decimal places
 else if( ddm > 0 ) {
   ddlat = ( ddd + (int((ddm * 1000) / 60) / 1000) );
   sfmt = "%3.3f";
+  ddprec = 0.001;
 }
 # ... to 1 decimal place
 else if( ddd > 0 ) {
   ddlat = ( (int((ddd * 10)) / 10) );
   sfmt = "%3.1f";
+  ddprec = 0.1;
 }
 # check to see if we're in the southern hemisphere...
 if( sGetValue("BioCentroidLatitudeLocal0:4") != "" ) {
@@ -267,7 +271,8 @@ else
 # write decimal & verbatim values
 printf( ",\"%s\",\"%s\"", sdlat, slat );                  #decimalLatitude,verbatimLatitude
 
-
+# we keep ddprec that was determined from the latitude,
+# because we want the coarser precision of the coord's
 slon = ""; sfmt = "";
 ddlon = 0.0; ddd = 0.0; ddm = 0.0; dds = 0.0;
 if( sGetValue("BioCentroidLongitudeLocal0:1") != "" ) {
@@ -292,11 +297,19 @@ if( dds > 0 ) {
 else if( ddm > 0 ) {
   ddlon = ( ddd + (int((ddm * 1000) / 60) / 1000) );
   sfmt = "%3.3f";
+
+  # if ddprec was previously finer, we must reduce the precision
+  if( ddprec <= 0.001 )
+    ddprec = 0.001;
 }
 # ... to 1 decimal place
 else if( ddd > 0 ) {
   ddlon = ( (int((ddd * 10)) / 10) );
   sfmt = "%3.1f";
+
+  # and again: if ddprec was previously finer, we must also reduce the precision
+  if( ddprec <= 0.1 )
+    ddprec = 0.1;
 }
 # check to see if we're in the southern hemisphere...
 if( sGetValue("BioCentroidLongitudeLocal0:4") != "" ) {
@@ -310,8 +323,19 @@ if( (ddlon == 0.0) )
   sdlon = "";
 else
   sdlon = sprintf( sfmt, ddlon );
+# write ddprec to sprec
+if( ddprec < 1 ) {
+  if( ddprec == 0.00001 )
+    sprec = sprintf( "%1.5f", ddprec );
+  else if( ddprec == 0.001 )
+    sprec = sprintf( "%1.3f", ddprec );
+  else if( ddprec == 0.1 )
+    sprec = sprintf( "%1.1f", ddprec );
+  else 
+    sprec = "";
+}
 # write decimal & verbatim values
-printf( ",\"%s\",\"%s\"", sdlon, slon );                  #decimalLongitude,verbatimLongitude
+printf( ",\"%s\",\"%s\",\"%s\"", sdlon, slon, sprec );                  #decimalLongitude,verbatimLongitude,coordinatePrecision
 
 
 ##########
@@ -376,10 +400,26 @@ sverbevtdate = "";
 
 if( sGetValue("PreDateCollected:1") != "" ) {
   sevtdate = sRetPrint("PreDateCollected:1");
-  if( sGetValue("PreDateCollected:2") != "" ) {
-    sevtdate = sevtdate "-" sRetPrint("PreDateCollected:2");
-    if( sGetValue("PreDateCollected:3") != "" ) {
-      sevtdate = sevtdate "-" sRetPrint("PreDateCollected:3");
+  sdtpart = sGetValue("PreDateCollected:2");
+
+  if( (sdtpart != "") ) {
+  	# we need to pad this number with leading zeros...
+  	sdigit = "";
+  	if( (sdtpart > 0) ) {
+  		sdigit = sprintf( "%02d", sdtpart );
+  	}
+  	if( sdigit != "" ) {
+      sevtdate = sevtdate "-" sdigit;
+      sdtpart = sGetValue("PreDateCollected:3");
+
+      if( (sdtpart != "") ) {
+        # we also need to pad this number with leading zeros...
+        sdigit = "";
+        if( (sdtpart != "") && (sdtpart > 0) ) {
+  	      sdigit = sprintf( "%02d", sdtpart );
+        }
+        if( sdigit != "" ) {
+          sevtdate = sevtdate "-" sdigit;
 
 #redundant - sam doesn't capture the from/to concept in ecatalogue; it is little-used in ecollectionevents
 #      bdelim = 0;
@@ -406,6 +446,8 @@ if( sGetValue("PreDateCollected:1") != "" ) {
 #            }
 #        }
 
+        }
+      }
     }
   }
 }
