@@ -51,9 +51,11 @@ SFTPSTAGE=$DWCDM/sftp_staging
 # if not a full path will be created under DWCDM
 SFTPHISTORY=$DWCDM/sftp_history
 # the sftp ip addy (name resolution is disabled)
-SFTPIPADDR=175.41.168.229
+SFTPIPADDR=`cat SFTPIPADDR.txt`
 #the sftp user
-SFTPUSER=xxxx
+SFTPUSER=`cat SFTPUSER.txt`
+#the sftp password
+SFTPPASS=`cat SFTPPASS.txt`
 
 # set up the export directory
 pushd $DWCDM > /dev/null
@@ -276,7 +278,7 @@ else
   echo "#$0#$(date +%H:%M:%S)# 5 - sending all files in $SFTPSTAGE"
 
   #need to test for success/failure on sftp before moving data to history
-  echo "put $SFTPSTAGE/*" | sftp $SFTPUSER@$SFTPIPADDR
+  lftp sftp://$SFTPUSER:$SFTPPASS@$SFTPIPADDR  -e "put $SFTPSTAGE/*; bye"
 
 
   ##### 6 #####
