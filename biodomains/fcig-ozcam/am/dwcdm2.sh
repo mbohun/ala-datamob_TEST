@@ -56,6 +56,7 @@ SFTPIPADDR=`cat SFTPIPADDR.txt`
 SFTPUSER=`cat SFTPUSER.txt`
 #the sftp password
 SFTPPASS=`cat SFTPPASS.txt`
+EXPORTDATE=`date "+%Y/%m/%d %H:%M:%S"`
 
 # set up the export directory
 pushd $DWCDM > /dev/null
@@ -292,4 +293,8 @@ else
 
 fi
 
+#the script was successful so save date and time of this export for use with next incremental export
+touch amexport.last
+mv amexport.last amexport.last.bak
+echo $EXPORTDATE > amexport.last
 
