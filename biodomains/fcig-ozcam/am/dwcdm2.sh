@@ -257,7 +257,7 @@ echo "#$0#$(date +%H:%M:%S)# 4 - bundling $DWCDM/$EXDIR with tar.gz"
   mkdir -vp "$SFTPSTAGE"
   mkdir -vp "$SFTPHISTORY"
 
-tarret=$(tar -zcvf $SFTPSTAGE/$EXDIR.tar.gz $DWCDM/$EXDIR > /dev/null)$?
+tarret=$(tar -zcvf $SFTPSTAGE/$EXDIR.tar.gz $EXDIR -C $DWCDM > /dev/null)$?
 
 if [ $tarret -ne 0 ]
 then
@@ -265,22 +265,29 @@ then
 
   exit $tarret
 
-else
-	# tell bash to continue logging only to the main log files
-	exec > >(tee -a $DWCDM/log.dwcdm2)
-	exec 2> >(tee -a $DWCDM/logerr.dwcdm2)
+fi
+# tell bash to continue logging only to the main log files
+exec > >(tee -a $DWCDM/log.dwcdm2)
+exec 2> >(tee -a $DWCDM/logerr.dwcdm2)
 
-  # delete the source directory
-  rm -r $DWCDM/$EXDIR
+# delete the source directory
+rm -r $DWCDM/$EXDIR
 
-  ##### 5 #####
-  # send all exports
+##### 5 #####
+# send all exports
 
-  echo "#$0#$(date +%H:%M:%S)# 5 - sending all files in $SFTPSTAGE"
+echo "#$0#$(date +%H:%M:%S)# 5 - sending all files in $SFTPSTAGE"
 
-  #need to test for success/failure on sftp before moving data to history
-  lftp sftp://$SFTPUSER:$SFTPPASS@$SFTPIPADDR  -e "put $SFTPSTAGE/*; bye"
+#need to test for success/failure on sftp before moving data to history
+lftp sftp://$SFTPUSER:$SFTPPASS@$SFTPIPADDR  -e "put $SFTPSTAGE/*; bye"
 
+
+if [`cat $DWCDM/logerr.dwcdm2 | wc -l` -eq 0 ] # script ran without error (need better way to test for overall success)
+then
+  # save date and time of this export for use with next incremental export
+  touch amexport.last
+  mv amexport.last amexport.last.bak
+  echo $EXPORTDATE > amexport.last
 
   ##### 6 #####
   # move all exports to the history
@@ -288,13 +295,7 @@ else
   echo "#$0#$(date +%H:%M:%S)# 6 - moving all files in $SFTPHISTORY"
 
   mv $SFTPSTAGE/* $SFTPHISTORY/
-
-  echo "#$0#$(date +%H:%M:%S)# finished"
-
 fi
 
-#the script was successful so save date and time of this export for use with next incremental export
-touch amexport.last
-mv amexport.last amexport.last.bak
-echo $EXPORTDATE > amexport.last
+  echo "#$0#$(date +%H:%M:%S)# finished"
 
