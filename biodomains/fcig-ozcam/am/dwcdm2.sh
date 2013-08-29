@@ -279,7 +279,7 @@ rm -r $DWCDM/$EXDIR
 echo "#$0#$(date +%H:%M:%S)# 5 - sending all files in $SFTPSTAGE"
 
 #need to test for success/failure on sftp before moving data to history
-lftp sftp://$SFTPUSER:$SFTPPASS@$SFTPIPADDR  -e "put $SFTPSTAGE/*; bye"
+lftp sftp://$SFTPUSER:$SFTPPASS@$SFTPIPADDR  -e "put $SFTPSTAGE/$EXDIR.tar.gz; bye"
 
 
 if [`cat $DWCDM/logerr.dwcdm2 | wc -l` -eq 0 ] # script ran without error (need better way to test for overall success)
