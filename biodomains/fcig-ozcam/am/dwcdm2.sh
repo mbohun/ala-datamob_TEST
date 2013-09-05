@@ -35,6 +35,10 @@
 
 clear
 
+pushd /home/emu/amweb
+source .profile # this sets various EMu variables and adds to PATH
+popd
+
 # should be the full path to directory containing this script (note, no trailing '/')
 DWCDM="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # the name of the single discipline export script in DWCDM
@@ -86,6 +90,10 @@ exec > >(tee -a $DWCDM/log.dwcdm2)
 exec 2> >(tee -a $DWCDM/logerr.dwcdm2)
 # as the script continues, logs will also made to the tmp export dir
 # this has the effect of the logs being bundled with the export
+echo '--------------------------------' $EXPORTDATE '--------------------------------'
+echo some variables:
+set | grep TEX
+set | grep EMU
 
 # if required, export a list of disciplines - data exported will be confined to these
 #   if disciplines are ever added or you wish to export only a subset
