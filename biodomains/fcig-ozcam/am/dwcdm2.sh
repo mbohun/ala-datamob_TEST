@@ -290,7 +290,7 @@ echo "#$0#$(date +%H:%M:%S)# 5 - sending all files in $SFTPSTAGE"
 lftp sftp://$SFTPUSER:$SFTPPASS@$SFTPIPADDR  -e "put $SFTPSTAGE/$EXDIR.tar.gz; bye"
 
 
-if [`cat $DWCDM/logerr.dwcdm2 | wc -l` -eq 0 ] # script ran without error (need better way to test for overall success)
+if [ `cat $DWCDM/logerr.dwcdm2 | wc -l` -eq 0 ] # script ran without error (need better way to test for overall success)
 then
   # save date and time of this export for use with next incremental export
   touch amexport.last
