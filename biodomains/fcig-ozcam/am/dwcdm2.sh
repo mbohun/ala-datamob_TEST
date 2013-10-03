@@ -86,11 +86,12 @@ fi
 #exec > >(tee -a $DWCDM/$EXDIR/dwcdm2.sh.log) 2>&1
 # preferable to copy stdout & stderr to separate log files;
 # note: this log file will grow with every export
+echo '--------------------------------' $EXPORTDATE '--------------------------------' >> $DWCDM/log.dwcdm2
+echo '--------------------------------' $EXPORTDATE '--------------------------------' >> $DWCDM/logerr.dwcdm
 exec > >(tee -a $DWCDM/log.dwcdm2)
 exec 2> >(tee -a $DWCDM/logerr.dwcdm2)
 # as the script continues, logs will also made to the tmp export dir
 # this has the effect of the logs being bundled with the export
-echo '--------------------------------' $EXPORTDATE '--------------------------------'
 echo some variables:
 set | grep TEX
 set | grep EMU
@@ -290,7 +291,7 @@ echo "#$0#$(date +%H:%M:%S)# 5 - sending all files in $SFTPSTAGE"
 lftp sftp://$SFTPUSER:$SFTPPASS@$SFTPIPADDR  -e "put $SFTPSTAGE/$EXDIR.tar.gz; bye"
 
 
-if [ `cat $DWCDM/logerr.dwcdm2 | wc -l` -eq 0 ] # script ran without error (need better way to test for overall success)
+if [ `cat $DWCDM/$EXDIR/logerr.dwcdm2 | wc -l` -eq 1 ] # script ran without error (need better way to test for overall success)
 then
   # save date and time of this export for use with next incremental export
   touch amexport.last
