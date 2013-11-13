@@ -297,8 +297,13 @@ then
   # save date and time of the most recently inserted record for use with next incremental export
   touch amexport.last
   mv amexport.last amexport.last.bak
-  export MAXADMDATEINSERTED=`echo 'max (select AdmDateInserted from ecatalogue)' | texql -R` # EMu has a near stroke trying to do this simple thing
-  export MAXADMTIMEINSERTED=`echo "max ( select AdmTimeInserted from ecatalogue where AdmDateInserted = '"${MAXADMDATEINSERTED=}"' )" | texql -R | sed "s/'//g" `
+  MAXADMDATEINSERTED=`echo 'max (select AdmDateInserted from ecatalogue)' | texql -R` # EMu has a near stroke trying to do this simple thing
+  MAXADMTIMEINSERTED=`echo "max ( select AdmTimeInserted from ecatalogue where AdmDateInserted = '"${MAXADMDATEINSERTED=}"' )" | texql -R | sed "s/'//g" `
+  #need to change dd/mm/yyyy to yyyy/mm/dd:
+  MAXADMYEARINSERTED=`echo $MAXADMDATEINSERTED | cut -f3 -d/`
+  MAXADMMONTHINSERTED=`echo $MAXADMDATEINSERTED | cut -f2 -d/`
+  MAXADMDAYINSERTED=`echo $MAXADMDATEINSERTED | cut -f1 -d/`
+  MAXADMDATEINSERTED=${MAXADMYEARINSERTED}/${MAXADMMONTHINSERTED}/${MAXADMDAYINSERTED}
   echo $MAXADMDATEINSERTED $MAXADMTIMEINSERTED > amexport.last
 
   ##### 6 #####
