@@ -293,10 +293,12 @@ lftp sftp://$SFTPUSER:$SFTPPASS@$SFTPIPADDR  -e "put $SFTPSTAGE/$EXDIR.tar.gz; b
 
 if [ `cat $DWCDM/$EXDIR/logerr.dwcdm2 | wc -l` -eq 0 ] # script ran without error (need better way to test for overall success)
 then
-  # save date and time of this export for use with next incremental export
+  # save date and time of the most recently inserted record for use with next incremental export
   touch amexport.last
   mv amexport.last amexport.last.bak
-  echo $EXPORTDATE > amexport.last
+  export MAXADMDATEINSERTED=`echo 'max (select AdmDateInserted from ecatalogue)' | texql -R` # EMu has a near stroke trying to do this simple thing
+  export MAXADMTIMEINSERTED=`echo "max ( select AdmTimeInserted from ecatalogue where AdmDateInserted = '"${MAXADMDATEINSERTED=}"' )" | texql -R | sed "s/'//g" `
+  echo $MAXADMDATEINSERTED $MAXADMTIMEINSERTED > amexport.last
 
   ##### 6 #####
   # move all exports to the history
