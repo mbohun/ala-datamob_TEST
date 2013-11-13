@@ -285,13 +285,14 @@ rm -r $DWCDM/$EXDIR
 ##### 5 #####
 # send all exports
 
-echo "#$0#$(date +%H:%M:%S)# 5 - sending all files in $SFTPSTAGE"
+#sometimes for testing don't want to do this step so make it conditional on environment variable SKIPSFTP being empty:
+if test "x" == "x$SKIPSFTP"
+then
+  echo "#$0#$(date +%H:%M:%S)# 5 - sending all files in $SFTPSTAGE"
+  lftp sftp://$SFTPUSER:$SFTPPASS@$SFTPIPADDR  -e "put $SFTPSTAGE/$EXDIR.tar.gz; bye"
+fi
 
-#need to test for success/failure on sftp before moving data to history
-lftp sftp://$SFTPUSER:$SFTPPASS@$SFTPIPADDR  -e "put $SFTPSTAGE/$EXDIR.tar.gz; bye"
-
-
-if [ `cat $DWCDM/$EXDIR/logerr.dwcdm2 | wc -l` -eq 0 ] # script ran without error (need better way to test for overall success)
+if [ `cat $DWCDM/$EXDIR/logerr.dwcdm2 | wc -l` -eq 0 ] # script ran without error (need better way to test for overall success) esp.need to test for success/failure on sftp before moving data to history
 then
   # save date and time of the most recently inserted record for use with next incremental export
   touch amexport.last
