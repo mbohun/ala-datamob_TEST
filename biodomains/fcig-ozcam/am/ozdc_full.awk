@@ -87,7 +87,7 @@ printf( "\nWriting valid records as mapped" ) >> _dbg_out_file;
 }
 
 # print header [search file for '^print.*#([a-zA-Z,]*?)\r'
-printf( "\"institutionCode\",\"basisOfRecord\",\"dcterms:type\",\"collectionCode\",\"scientificName\",\"acceptedNameUsage\",\"nameAccordingTo\",\"typeStatus\",\"kingdom\",\"phylum\",\"class\",\"order\",\"family\",\"genus\",\"specificEpithet\",\"vernacularName\",\"verbatimTaxonRank\",\"identifiedBy\",\"dateIdentified\",\"identificationRemarks\",\"waterBody\",\"country\",\"stateProvince\",\"county\",\"verbatimLocality\",\"decimalLatitude\",\"verbatimLatitude\",\"decimalLongitude\",\"verbatimLongitude\",\"verbatimCoordinateSystem\",\"locationRemarks\",\"eventID\",\"eventDate\",\"verbatimEventDate\",\"eventTime\",\"dcterms:modified\",\"samplingProtocol\",\"habitat\",\"occurrenceID\",\"catalogNumber\",\"recordedBy\",\"otherCatalogNumbers\",\"sex\",\"preparations\",\"associatedMedia\",\"Coordinate Uncertainty in Metres\"" );
+printf( "\"institutionCode\",\"basisOfRecord\",\"dcterms:type\",\"collectionCode\",\"scientificName\",\"acceptedNameUsage\",\"nameAccordingTo\",\"typeStatus\",\"kingdom\",\"phylum\",\"class\",\"order\",\"family\",\"genus\",\"specificEpithet\",\"vernacularName\",\"verbatimTaxonRank\",\"identifiedBy\",\"dateIdentified\",\"identificationRemarks\",\"waterBody\",\"country\",\"stateProvince\",\"county\",\"verbatimLocality\",\"decimalLatitude\",\"verbatimLatitude\",\"decimalLongitude\",\"verbatimLongitude\",\"coordinatePrecision\",\"verbatimCoordinateSystem\",\"locationRemarks\",\"eventID\",\"eventDate\",\"verbatimEventDate\",\"eventTime\",\"dcterms:modified\",\"samplingProtocol\",\"habitat\",\"occurrenceID\",\"catalogNumber\",\"recordedBy\",\"otherCatalogNumbers\",\"sex\",\"preparations\",\"associatedMedia\",\"verbatimUncertainty\",\"coordinateUncertaintyInMeters\"" );
 printf( "\n" );
 
   }
@@ -118,50 +118,93 @@ printf(" ! %6d [%4d] - %.55s\n", NR, NF, $LINE) >> _dbg_out_file;
 printf( "\"AM\"" ); 														#institutionCode
 printf( ",\"PreservedSpecimen\"" ); 										#basisOfRecord
 printf( ",\"PhysicalObject\"" ); 											#dcterms:type
-printf( ",\"%s\"",      sRetPrint("CatDiscipline:1") ); 					#collectionCode
+printf( ",\"%s\"",      department ); 					#collectionCode
 
 
 ###############
 # WHAT ########
 ###############
-printf( ",\"%s\"", 		sRetPrint("IdeScientificNameLocal:1") ); 			#scientificName
-printf( ",\"%s\"", 		sRetPrint("IdeQualifiedName:1") ); 					#acceptedNameUsage
-printf( ",\"%s\"", 		sRetPrint("IdeAuthorStringLocal:1") ); 				#nameAccordingTo
-printf( ",\"%s\"", 		sRetPrint("CitTypeStatus:1") ); 					#typeStatus
 
-printf( ",\"%s\"", 		sRetPrint("IdeKingdomLocal:1") ); 					#kingdom
-printf( ",\"%s\"", 		sRetPrint("IdePhylumLocal:1") ); 					#phylum
-printf( ",\"%s\"", 		sRetPrint("IdeClassLocal:1") ); 					#class
-printf( ",\"%s\"", 		sRetPrint("IdeOrderLocal:1") ); 					#order
-printf( ",\"%s\"", 		sRetPrint("IdeFamilyLocal:1") ); 					#family
-printf( ",\"%s\"", 		sRetPrint("IdeGenusLocal:1") ); 					#genus
-printf( ",\"%s\"", 		sRetPrint("IdeSpeciesLocal:1") ); 					#specificEpithet
+# there can be multiple identifications - need to choose the one which is current (IdeCurrentId is "Yes")
+# and ignore historical identifications e.g. if IdeCurrentId:6 is "Yes" then set ideindex to "6" and
+# use this to retrieve data from the correct identification fields (IdeScientificNameLocal, etc)
+# As of May 2013 there are 20 IdeCurrentId fields
+ideindex = "1"
+for(i=1;i<21;i++) {
+  idecurrent = "IdeCurrentId:" i;
+  if (sRetPrint(idecurrent) == "Yes") {ideindex=i;dateideindex=i-1;break}
+}
 
+
+printf( ",\"%s\"", 		sRetPrint("IdeScientificNameLocal:" ideindex ) ); 			#scientificName
+printf( ",\"%s\"", 		sRetPrint("IdeQualifiedName:"ideindex ) ); 					#acceptedNameUsage
+printf( ",\"%s\"", 		sRetPrint("IdeAuthorStringLocal:" ideindex ) ); 				#nameAccordingTo
+
+
+# instead of using CitTypeStatus1 use concatenated CitTypeStatusCitationsCombine fields
+# As of July 2013 there are 40 CitTypeStatusCitationsCombine fields (mostly empty, some with duplicate values)
+# e.g.:
+# CitTypeStatusCitationsCombine:1=10024300: Syntypes: Epigrus protractus Hedley, 1904 : : : Gastropoda : Mollusca
+# want also to remove the leading numeric id and colon (i.e. "10024300: ")
+
+ctsindex = "1"
+for(i=1;i<40;i++) {
+  ctscurrent = "CitTypeStatusCitationsCombine:" i;
+  cts = sRetPrint(ctscurrent);
+  if ( cts != "") { 
+    sub( /^[0123456789]+: +/,"",cts); #strip leading cruft
+    if ( cts !~ /^:/ ) { # want the first colon-delimited field to be a string (like "holotype") so disregard if empty
+      ctsarray[cts] = 1;
+    }
+  }
+}
+typestatus = "";
+for ( cts in ctsarray ) {
+  typestatus = (typestatus cts ";") ;
+}
+delete ctsarray;
+sub( /;$/,"",typestatus); #strip trailing semicolon
+printf( ",\"%s\"", 		typestatus ); 					#typeStatus
+
+
+
+
+printf( ",\"%s\"", 		sRetPrint("IdeKingdomLocal:" ideindex ) ); 					#kingdom
+printf( ",\"%s\"", 		sRetPrint("IdePhylumLocal:" ideindex ) ); 					#phylum
+printf( ",\"%s\"", 		sRetPrint("IdeClassLocal:" ideindex ) ); 					#class
+printf( ",\"%s\"", 		sRetPrint("IdeOrderLocal:" ideindex ) ); 					#order
+printf( ",\"%s\"", 		sRetPrint("IdeFamilyLocal:" ideindex ) ); 					#family
+printf( ",\"%s\"", 		sRetPrint("IdeGenusLocal:" ideindex ) ); 					#genus
+printf( ",\"%s\"", 		sRetPrint("IdeSpeciesLocal:" ideindex ) ); 					#specificEpithet
 #sGetValue("ConKindOfObject:1")
 printf( ",\"%s\"", 		sRetPrint("QuiTaxonomyCommonName:1") ); 			#vernacularName
-printf( ",\"%s\"", 		sRetPrint("IdeQualifierRank:1") ); 					#verbatimTaxonRank
+printf( ",\"%s\"", 		sRetPrint("IdeQualifierRank:" ideindex ) ); 					#verbatimTaxonRank
 
-printf( ",\"%s\"", 		sRetPrint("IdeIdentifiedByLocal:1") ); 				#identifiedBy
+printf( ",\"%s\"", 		sRetPrint("IdeIdentifiedByLocal:" ideindex ) ); 				#identifiedBy
 
+# the date identified field names have the form IdeDateIdentifiedX:[123]
+# where 1,2,3 are I think year, month, date
+# and X is the index we use for the current identification
+# unbelievably though, X here is zero based, so we need to subtract 1 from ideindex to get dateideindex (above)
 sdateid = "";
-if( sGetValue("IdeDateIdentified0:1") != "" ) {
-  sdateid = sRetPrint("IdeDateIdentified0:1");
-  if( sGetValue("IdeDateIdentified0:2") != "" ) {
-    sdateid = sdateid "-" sRetPrint("IdeDateIdentified0:2");
-    if( sGetValue("IdeDateIdentified0:3") != "" ) {
-      sdateid = sdateid "-" sRetPrint("IdeDateIdentified0:3");
+if( sGetValue("IdeDateIdentified" dateideindex ":1") != "" ) {
+  sdateid = sRetPrint("IdeDateIdentified" dateideindex ":1");
+  if( sGetValue("IdeDateIdentified" dateideindex ":2") != "" ) {
+    sdateid = sdateid "-" sRetPrint("IdeDateIdentified" dateideindex ":2");
+    if( sGetValue("IdeDateIdentified" ideindex ":3") != "" ) {
+      sdateid = sdateid "-" sRetPrint("IdeDateIdentified" dateideindex ":3");
     }
   }
 }
 printf( ",\"%s\"", 		sdateid ); 											#dateIdentified
 
 sidremarks = "";
-if( sGetValue("IdeConfidence:1") != "" )
-  sidremarks = sidremarks "ecatalogue.IdeConfidence: " sRetPrint("IdeConfidence:1", 1) "; ";
+if( sGetValue("IdeConfidence:" ideindex ) != "" )
+  sidremarks = sidremarks "ecatalogue.IdeConfidence: " sRetPrint("IdeConfidence:" ideindex, 1) "; ";
 if( sGetValue("IdeSpecimenQuality:1") != "" )
   sidremarks = sidremarks "ecatalogue.IdeSpecimenQuality: " sRetPrint("IdeSpecimenQuality:1", 1) "; ";
-if( sGetValue("IdeComments:1") != "" )
-  sidremarks = sidremarks "ecatalogue.IdeComments: " sRetPrint("IdeComments:1", 1) "; ";
+if( sGetValue("IdeComments:" ideindex) != "" )
+  sidremarks = sidremarks "ecatalogue.IdeComments: " sRetPrint("IdeComments:" ideindex, 1) "; ";
 printf( ",\"%s\"",		sidremarks ); 										#identificationRemarks
 
 
@@ -175,7 +218,7 @@ printf( ",\"%s\"",		sRetPrint("BioDistrictCountyShireLocal:1") ); 		#county
 printf( ",\"%s\"",		sRetPrint("QuiPreciseLocationLocal:1") ); 			#verbatimLocality
 
 
-slat = ""; sfmt = "";
+slat = ""; sfmtlat = "";
 ddlat = 0.0; ddd = 0.0; ddm = 0.0; dds = 0.0;
 if( sGetValue("BioPreferredCentroidLatitude:1") != "" ) {
   slat = slat sRetPrint("BioPreferredCentroidLatitude:1") "° ";
@@ -193,17 +236,17 @@ if( sGetValue("BioPreferredCentroidLatitude:3") != "" ) {
 # ... to 5 decimal places
 if( dds > 0 ) {
 	ddlat = ( ddd + (int((ddm * 100000) / 60) / 100000) + (int((dds * 100000) / 3600) / 100000) );
-	sfmt = "%3.5f";
+	sfmtlat = "%3.5f";
 }
 # ... to 3 decimal places
 else if( ddm > 0 ) {
 	ddlat = ( ddd + (int((ddm * 1000) / 60) / 1000) );
-	sfmt = "%3.3f";
+	sfmtlat = "%3.3f";
 }
 # ... to 1 decimal place
 else if( ddd > 0 ) {
 	ddlat = ( (int((ddd * 10)) / 10) );
-	sfmt = "%3.1f";
+	sfmtlat = "%3.1f";
 }
 # check to see if we're in the southern hemisphere...
 if( sGetValue("BioPreferredCentroidLatitude:4") != "" ) {
@@ -216,12 +259,11 @@ if( sGetValue("BioPreferredCentroidLatitude:4") != "" ) {
 if( (ddlat == 0.0) )
 	sdlat = "";
 else
-	sdlat = sprintf( sfmt, ddlat );
+	sdlat = sprintf( sfmtlat, ddlat );
 # write decimal & verbatim values
 printf( ",\"%s\",\"%s\"",	sdlat, slat ); 									#decimalLatitude,verbatimLatitude
 
-
-slon = ""; sfmt = "";
+slon = ""; sfmtlon = "";
 ddlon = 0.0; ddd = 0.0; ddm = 0.0; dds = 0.0;
 if( sGetValue("BioPreferredCentroidLongitude:1") != "" ) {
   slon = slon sRetPrint("BioPreferredCentroidLongitude:1") "° ";
@@ -239,17 +281,17 @@ if( sGetValue("BioPreferredCentroidLongitude:3") != "" ) {
 # ... to 5 decimal places
 if( dds > 0 ) {
 	ddlon = ( ddd + (int((ddm * 100000) / 60) / 100000) + (int((dds * 100000) / 3600) / 100000) );
-	sfmt = "%3.5f";
+	sfmtlon = "%3.5f";
 }
 # ... to 3 decimal places
 else if( ddm > 0 ) {
 	ddlon = ( ddd + (int((ddm * 1000) / 60) / 1000) );
-	sfmt = "%3.3f";
+	sfmtlon = "%3.3f";
 }
 # ... to 1 decimal place
 else if( ddd > 0 ) {
 	ddlon = ( (int((ddd * 10)) / 10) );
-	sfmt = "%3.1f";
+	sfmtlon = "%3.1f";
 }
 # check to see if we're in the southern hemisphere...
 if( sGetValue("BioPreferredCentroidLongitude:4") != "" ) {
@@ -262,46 +304,19 @@ if( sGetValue("BioPreferredCentroidLongitude:4") != "" ) {
 if( (ddlon == 0.0) )
 	sdlon = "";
 else
-	sdlon = sprintf( sfmt, ddlon );
+	sdlon = sprintf( sfmtlon, ddlon );
 # write decimal & verbatim values
-printf( ",\"%s\",\"%s\"",	sdlon, slon ); 									#decimalLongitude,verbatimLongitude
+printf( ",\"%s\",\"%s\"", sdlon, slon ); 									#decimalLongitude,verbatimLongitude
+
+if ( (sfmtlat == "%3.5f") || (sfmtlon == "%3.5f") )  { coordpr = "0.00001" } 
+else if ( (sfmtlon == "%3.3f") || (sfmtlat == "%3.3f") ) { coordpr = "0.001" }
+else if ( (sfmtlat == "%3.1f") || (sfmtlon == "%3.1f") ) { coordpr = "0.1" }
+else coordpr = "";
 
 
-##########
-# old code - the old way allows for creeping errors from floating point arithmetic
-#:::::::::
-#slon = "";
-#ddlon = 0.0;
-#if( sGetValue("BioPreferredCentroidLongitude:1") != "" ) {
-#  slon = slon sRetPrint("BioPreferredCentroidLongitude:1") "° ";
-#  ddlon = sGetValue("BioPreferredCentroidLongitude:1");
-#}
-#if( sGetValue("BioPreferredCentroidLongitude:2") != "" ) {
-#  slon = slon sRetPrint("BioPreferredCentroidLongitude:2") "\' ";
-#  ddlon += sGetValue("BioPreferredCentroidLongitude:2") / 60;
-#}
-#if( sGetValue("BioPreferredCentroidLongitude:3") != "" ) {
-#  slon = slon sRetPrint("BioPreferredCentroidLongitude:3") "\\\" ";
-#  ddlon += sGetValue("BioPreferredCentroidLongitude:3") / 3600;
-#}
-## truncate to 3 decimal places
-#else if( ddlon != 0.0 ) {
-#}
-#if( sGetValue("BioPreferredCentroidLongitude:4") != "" ) {
-#  slon = slon sRetPrint("BioPreferredCentroidLongitude:4");
-#
-#  if( sGetValue("BioPreferredCentroidLatitude:4") == "W" )
-#  	ddlon -= (ddlon * 2);
-#}
-#if( (ddlon == 0.0) )
-#	sdlon = "";
-#else
-#	sdlon = sprintf( "%f", ddlon );
-#
-#printf( ",\"%s\",\"%s\"",	sdlon, slon ); $decimalLongitude,verbatimLongitude
+printf( ",\"%s\"", coordpr); 		#coordinatePrecision
 
-
-printf( ",\"%s\"",			sRetPrint("QuiLatLongDetermination:1") ); 		#verbatimCoordinateSystem
+printf( ",\"%s\"", sRetPrint("QuiLatLongDetermination:1") ); 		#verbatimCoordinateSystem
 
 slocremarks = "";
 if( sGetValue("LocCollectionEventLocal:1") != "" )
@@ -321,7 +336,7 @@ printf( ",\"%s\"", 			slocremarks ); 									#locationRemarks
 ###############
 seventid = "";
 if( sGetValue("ColCollectionEventsRef:1") != "" )
-  seventid = "ecollectionevents.irn:" sRetPrint("ColCollectionEventsRef:1");
+  seventid = "urn:australianmuseum.net.au:Events:" sRetPrint("ColCollectionEventsRef:1");
 printf( ",\"%s\"",												seventid );	#eventID
 
 sevtdate = "";
@@ -329,9 +344,9 @@ sverbevtdate = "";
 if( sGetValue("LocDateCollectedFrom:1") != "" ) {
   sevtdate = sRetPrint("LocDateCollectedFrom:1");
   if( sGetValue("LocDateCollectedFrom:2") != "" ) {
-    sevtdate = sevtdate "-" sRetPrint("LocDateCollectedFrom:2");
+    sevtdate = sevtdate "-" sprintf("%02d", sRetPrint("LocDateCollectedFrom:2"));
     if( sGetValue("LocDateCollectedFrom:3") != "" ) {
-      sevtdate = sevtdate "-" sRetPrint("LocDateCollectedFrom:3");
+      sevtdate = sevtdate "-" sprintf("%02d", sRetPrint("LocDateCollectedFrom:3"));
 
       bdelim = 0;
 		if( (sGetValue("LocDateCollectedTo:1") != "") && (sGetValue("LocDateCollectedTo:1") != sGetValue("LocDateCollectedFrom:1")) ) {
@@ -341,19 +356,19 @@ if( sGetValue("LocDateCollectedFrom:1") != "" ) {
 		if( (sGetValue("LocDateCollectedTo:2") != "") && (sGetValue("LocDateCollectedTo:2") != sGetValue("LocDateCollectedFrom:2")) ) {
 			if( bdelim == 0 ) {
 				bdelim = 1;
-				sevtdate = sevtdate "/" sRetPrint("LocDateCollectedTo:2");
+				sevtdate = sevtdate "/" sprintf("%02d", sRetPrint("LocDateCollectedTo:2"));
 			}
 			else {
-				sevtdate = sevtdate "-" sRetPrint("LocDateCollectedTo:2");
+				sevtdate = sevtdate "-" sprintf("%02d", sRetPrint("LocDateCollectedTo:2"));
 			}
 		}
 		if( (sGetValue("LocDateCollectedTo:3") != "") && (sGetValue("LocDateCollectedTo:3") != sGetValue("LocDateCollectedFrom:3")) ) {
 			if( bdelim == 0 ) {
 				bdelim = 1;
-				sevtdate = sevtdate "/" sRetPrint("LocDateCollectedTo:3");
+				sevtdate = sevtdate "/" sprintf("%02d", sRetPrint("LocDateCollectedTo:3"));
 			}
 			else {
-				sevtdate = sevtdate "-" sRetPrint("LocDateCollectedTo:3");
+				sevtdate = sevtdate "-" sprintf("%02d", sRetPrint("LocDateCollectedTo:3"));
 			}
 		}
     }
@@ -455,10 +470,10 @@ printf( ",\"%s\"", sRetPrint("LocCollectionMethod:1") ); 					#samplingProtocol
 printf( ",\"%s\"", sRetPrint("BioMicrohabitatDescription:1") ); 			#habitat
 #old, non-compliant: printf( ",\"urn:catalog:AM:%s:%s\"", sRetPrint("CatDiscipline:1"), sRetPrint("CatRegNumber:1") );
 #agreed lsid-pattern: urn:lsid:ozcam.taxonomy.org.au:[Institution Code]:[Collection code]:[Basis of Record](optional):[Catalog Number]:[Version](optional)
-printf( ",\"urn:lsid:ozcam.taxonomy.org.au:AM:%s:%s\"", sRetPrint("CatDiscipline:1"), sRetPrint("CatRegNumber:1") ); #occurrenceID
+printf( ",\"urn:lsid:ozcam.taxonomy.org.au:AM:%s:%s\"", department, sRetPrint("CatRegNumber:1") ); #occurrenceID
 printf( ",\"%s\"", sRetPrint("CatRegNumber:1") ); 							#catalogNumber
 printf( ",\"%s\"", sRetPrint("BioParticipantLocal:1") ); 					#recordedBy
-printf( ",\"ecatalogue.irn:%s; urn:catalog:AM:%s:%s\"", sRetPrint("irn:1"), sRetPrint("CatDiscipline:1"), sRetPrint("CatRegNumber:1") );  #otherCatalogNumbers
+printf( ",\"ecatalogue.irn:%s; urn:catalog:AM:%s:%s\"", sRetPrint("irn:1"), department, sRetPrint("CatRegNumber:1") );  #otherCatalogNumbers
 printf( ",\"%s\"", sRetPrint("ZooSex:1") ); 								#sex
 
 sprep = "";
@@ -473,12 +488,13 @@ printf( ",\"%s\"", sRetPrint("MulMultiMediaRef:1") );						#associatedMedia
 #add Coordinate Uncetrtainly in Metres
 #Matthew 16 Nov 2012
 qrv1 = sGetValue("QuiRadiusVerbatim:1"); # this should be e.g. "10km-100km" or "0m-10m" or "unknown". We just want to keep the higher value (assume its the last number given)
+printf( ",\"%s\"", qrv1 )	# verbatim uncertainty
 gsub( /[kK][mM]/,"000",qrv1); #kilometers to meters
 #gsub( /m/,"",qrv1); # retain digits only
 sub( /[^0123456789]+$/,"",qrv1); #strip trailing nondigit characters
 sub( /^.*[^0123456789]+/,"",qrv1); #strip leading nondigit characters
 
-printf( ",\"%s\"", qrv1 )
+printf( ",\"%s\"", qrv1 )	# coordinate uncertainty in meters
 #printf( ",\"%s\"", gsub( /10/,"FOO",sRetPrint("QuiRadiusVerbatim:1") ) );
 
 
@@ -596,3 +612,4 @@ function sGetValue( sind ) {
 
 	return s;
 }
+

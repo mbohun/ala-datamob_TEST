@@ -35,8 +35,8 @@
 
 clear
 
-# should be the full path to this script (note, no trailing '/')
-DWCDM=/amexport
+# should be the full path to directory containing this script (note, no trailing '/')
+DWCDM="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # the name of the single discipline export script in DWCDM
 EXSCRIPT=dwcdm2dsx.sh
 # the names of the awk scripts that do the ozcam-darwincore mapping
@@ -51,9 +51,12 @@ SFTPSTAGE=$DWCDM/sftp_staging
 # if not a full path will be created under DWCDM
 SFTPHISTORY=$DWCDM/sftp_history
 # the sftp ip addy (name resolution is disabled)
-SFTPIPADDR=175.41.168.229
+SFTPIPADDR=`cat SFTPIPADDR.txt`
 #the sftp user
-SFTPUSER=xxxx
+SFTPUSER=`cat SFTPUSER.txt`
+#the sftp password
+SFTPPASS=`cat SFTPPASS.txt`
+EXPORTDATE=`date "+%Y/%m/%d %H:%M:%S"`
 
 # set up the export directory
 pushd $DWCDM > /dev/null
@@ -89,7 +92,7 @@ exec 2> >(tee -a $DWCDM/logerr.dwcdm2)
 #   modify this file, commenting out lines with a leading '#'
 # write "$DWCDM/disciplines-list"
 
-if [ $DWCDM/disciplines-list ]
+if [ -f $DWCDM/disciplines-list ]
   then echo "#$0#$(date +%H:%M:%S)# $DWCDM/disciplines-list exists - using this list"
 
 else
@@ -106,7 +109,7 @@ else
   echo "#$0#$(date +%H:%M:%S)#  - if interested: Ctrl+C to terminate, then:"
   echo "#$0#$(date +%H:%M:%S)#       vi $DWCDM/disciplines-list"
 
-  echo distinct \(\(select CatDiscipline from ecatalogue\)\) | texql -R | tr -d \'\(\) >> "$DWCDM/disciplines-list"
+  echo distinct \(\(select SecDepartment_tab from ecatalogue\)\) | texql -R | sed "s/]//g;s/[()'\[]//g;s/|/\n/g" | sort -u | grep -v -e '`' -e "^$" -e "Evolutionary Biology Unit" -e "Archives" -e "Mineralogy" -e "Anthropology" -e "Admin" -e "Education" -e "Materials Conservation" -e "Palaeontology" -e "Archives" >> "$DWCDM/disciplines-list"
 
   echo "#$0#$(date +%H:%M:%S)# Check $DWCDM/disciplines-list before running $0 again"
 
@@ -250,7 +253,11 @@ echo "#$0#$(date +%H:%M:%S)# 4 - bundling $DWCDM/$EXDIR with tar.gz"
 # must redirect /dev/null otherwise the output of the command will be in $tarret
 # (see 'http://ubuntuforums.org/archive/index.php/t-373657.html' for comments on status-test)
 
-tarret=$(tar -zcvf $SFTPSTAGE/$EXDIR.tar.gz $DWCDM/$EXDIR > /dev/null)$?
+  #set up the sftp dirs if they don't already exist
+  mkdir -vp "$SFTPSTAGE"
+  mkdir -vp "$SFTPHISTORY"
+
+tarret=$(tar -zcvf $SFTPSTAGE/$EXDIR.tar.gz $EXDIR -C $DWCDM > /dev/null)$?
 
 if [ $tarret -ne 0 ]
 then
@@ -258,26 +265,29 @@ then
 
   exit $tarret
 
-else
-	# tell bash to continue logging only to the main log files
-	exec > >(tee -a $DWCDM/log.dwcdm2)
-	exec 2> >(tee -a $DWCDM/logerr.dwcdm2)
+fi
+# tell bash to continue logging only to the main log files
+exec > >(tee -a $DWCDM/log.dwcdm2)
+exec 2> >(tee -a $DWCDM/logerr.dwcdm2)
 
-  # delete the source directory
-  rm -r $DWCDM/$EXDIR
+# delete the source directory
+rm -r $DWCDM/$EXDIR
 
-  ##### 5 #####
-  # send all exports
+##### 5 #####
+# send all exports
 
-  echo "#$0#$(date +%H:%M:%S)# 5 - sending all files in $SFTPSTAGE"
+echo "#$0#$(date +%H:%M:%S)# 5 - sending all files in $SFTPSTAGE"
 
-  #set up the sftp dirs if they don't already exist
-  mkdir -vp "$SFTPSTAGE"
-  mkdir -vp "$SFTPHISTORY"
+#need to test for success/failure on sftp before moving data to history
+lftp sftp://$SFTPUSER:$SFTPPASS@$SFTPIPADDR  -e "put $SFTPSTAGE/$EXDIR.tar.gz; bye"
 
-  #need to test for success/failure on sftp before moving data to history
-  echo "put $SFTPSTAGE/*" | sftp $SFTPUSER@$SFTPIPADDR
 
+if [`cat $DWCDM/logerr.dwcdm2 | wc -l` -eq 0 ] # script ran without error (need better way to test for overall success)
+then
+  # save date and time of this export for use with next incremental export
+  touch amexport.last
+  mv amexport.last amexport.last.bak
+  echo $EXPORTDATE > amexport.last
 
   ##### 6 #####
   # move all exports to the history
@@ -285,8 +295,7 @@ else
   echo "#$0#$(date +%H:%M:%S)# 6 - moving all files in $SFTPHISTORY"
 
   mv $SFTPSTAGE/* $SFTPHISTORY/
+fi
 
   echo "#$0#$(date +%H:%M:%S)# finished"
-
-fi
 
