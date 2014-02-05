@@ -149,11 +149,17 @@ cat "$FNAME_IRN$1" | awk -F"," -v department="$1" -v _dbg_out_file="$DWCDMROOT/$
 ##### 3 #####
 # for the filtered irn-only list, export data from emu
 
+# make a file with emultimedia irn, rightholder and publisher fields
+echo "#$0#$(date +%H:%M:%S)# 3 - writing '$DWCDMROOT/$TMPEXD/$1$FNAME_EXDATA.images.tsv'"
+
+echo select irn.irn_1, MulCreator_tab, DetPublisher from emultimedia where AdmPublishWebNoPasswordFlag=\'Y\' and MulMimeType = \'image\' and exists \( SecDepartment_tab where SecDepartment = \'$DISC\' \) | texql | sed "s/^(//;s/')$//;s/,\['/\t/;s/'\],'/\t/;s/','/\t/" > $DWCDMROOT/$TMPEXD/$1$FNAME_EXDATA.images.tsv
+
+
 echo "#$0#$(date +%H:%M:%S)# 3 - writing '$DWCDMROOT/$TMPEXD/$1$FNAME_EXDATA.csv'"
 
 head -n 10 "$FNAME_IRNMOD$1" | texexport -k- -fdelimited -ms"+|" -md"" -mc ecatalogue > "$FNAME_HDR$1"
 
-cat "$FNAME_IRNMOD$1" | texexport -k- -fdelimited -ms"+|" -md"" -mc ecatalogue | awk -F"[+][|]" -v department="$1" -v _dbg_out_file="$DWCDMROOT/$TMPEXD/$EXAWKFULL.log" -f "$DWCDMROOT/$EXAWKFULL" | iconv -t UTF-8 -f ISO-8859-1 > "$1$FNAME_EXDATA.csv"
+cat "$FNAME_IRNMOD$1" | texexport -k- -fdelimited -ms"+|" -md"" -mc ecatalogue | awk -F"[+][|]" -v department="$1" -v _dbg_out_file="$DWCDMROOT/$TMPEXD/$EXAWKFULL.log" -v image_file="$DWCDMROOT/$TMPEXD/$1$FNAME_EXDATA.images.tsv" -f "$DWCDMROOT/$EXAWKFULL" | iconv -t UTF-8 -f ISO-8859-1 > "$1$FNAME_EXDATA.csv"
 
 #check all fields have got some data:
 #this is slow so make it optional
