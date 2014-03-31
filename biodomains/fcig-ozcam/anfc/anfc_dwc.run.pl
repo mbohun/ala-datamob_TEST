@@ -132,7 +132,7 @@ my $bDwcHdrPrinted = 0;
 
 #------------------------------------------------------------------------------
 # parse command line arguments
-#	usage: anfc_dwc.mapper.pl <IN> <OUT> <ERROR> <LOG>
+#	usage: anfc_dwc.run.pl <IN> <OUT> <ERROR> <LOG>
 #	 - all 4 arguments:  input file (or 'STDIN'), output file (or 'STDOUT'), error file, log file
 #	 - 3 arguments:      input file, output file, error file (run log to stdout)
 #	 - 2 arguments:      input file, output file (errors stderr, run log to stdout)
@@ -146,7 +146,7 @@ my $bDwcHdrPrinted = 0;
 			  "--------------------------------------------------------------------------\n"
 			. __FILE__ . strftime("#%F#%T#", localtime) . "\n"
 	    . "--------------------------------------------------------------------------\n"
-	    . "usage: anfc_dwc.mapper.pl <IN> <OUT> <ERROR> <LOG>\n"
+	    . "usage: anfc_dwc.run.pl <IN> <OUT> <ERROR> <LOG>\n"
 			. "- all 4:   input file(or 'STDIN'), output file(or 'STDOUT'), error file, log file\n"
 			. "- 3 args:  input file, output file, error file (run log to stdout)\n"
 			. "- 2 args:  input file, output file (errors stderr, run log to stdout)\n"
