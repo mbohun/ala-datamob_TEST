@@ -51,7 +51,22 @@ BEGIN {
 
 # 	when the header row is analysed, source indices will be stored in this array
 	#arrsSourceIndex[""] = "";
-};
+
+
+	while (getline < image_file)
+	{
+	split($0,ft,"\t");
+	mmirn=ft[1];
+	photographer=ft[2];
+	rightholder=ft[3];
+	photographers[mmirn]=photographer;
+	rightholders[mmirn]=rightholder;
+	}
+	close(image_file);
+	
+	for (irn in photographers) { printf("%s\t%s\n",irn,photographers[irn]) > (image_file ".check") } ;
+
+	};
 
 # for each line:
 #     if it the header row, sets the mapping & field count
@@ -87,7 +102,7 @@ printf( "\nWriting valid records as mapped" ) >> _dbg_out_file;
 }
 
 # print header [search file for '^print.*#([a-zA-Z,]*?)\r'
-printf( "\"institutionCode\",\"basisOfRecord\",\"dcterms:type\",\"collectionCode\",\"scientificName\",\"acceptedNameUsage\",\"nameAccordingTo\",\"typeStatus\",\"kingdom\",\"phylum\",\"class\",\"order\",\"family\",\"genus\",\"specificEpithet\",\"vernacularName\",\"verbatimTaxonRank\",\"identifiedBy\",\"dateIdentified\",\"identificationRemarks\",\"waterBody\",\"country\",\"stateProvince\",\"county\",\"verbatimLocality\",\"decimalLatitude\",\"verbatimLatitude\",\"decimalLongitude\",\"verbatimLongitude\",\"coordinatePrecision\",\"verbatimCoordinateSystem\",\"locationRemarks\",\"eventID\",\"eventDate\",\"verbatimEventDate\",\"eventTime\",\"dcterms:modified\",\"samplingProtocol\",\"habitat\",\"occurrenceID\",\"catalogNumber\",\"recordedBy\",\"otherCatalogNumbers\",\"sex\",\"preparations\",\"associatedMedia\",\"verbatimUncertainty\",\"coordinateUncertaintyInMeters\"" );
+printf( "\"institutionCode\",\"basisOfRecord\",\"dcterms:type\",\"collectionCode\",\"scientificName\",\"acceptedNameUsage\",\"nameAccordingTo\",\"typeStatus\",\"kingdom\",\"phylum\",\"class\",\"order\",\"family\",\"genus\",\"specificEpithet\",\"vernacularName\",\"verbatimTaxonRank\",\"identifiedBy\",\"dateIdentified\",\"identificationRemarks\",\"waterBody\",\"country\",\"stateProvince\",\"county\",\"verbatimLocality\",\"decimalLatitude\",\"verbatimLatitude\",\"decimalLongitude\",\"verbatimLongitude\",\"coordinatePrecision\",\"verbatimCoordinateSystem\",\"locationRemarks\",\"eventID\",\"eventDate\",\"verbatimEventDate\",\"eventTime\",\"dcterms:modified\",\"samplingProtocol\",\"habitat\",\"occurrenceID\",\"catalogNumber\",\"recordedBy\",\"otherCatalogNumbers\",\"sex\",\"preparations\",\"associatedMedia\",\"photographer\",\"rightholder\",\"verbatimUncertainty\",\"coordinateUncertaintyInMeters\"" );
 printf( "\n" );
 
   }
@@ -221,7 +236,7 @@ printf( ",\"%s\"",		sRetPrint("QuiPreciseLocationLocal:1") ); 			#verbatimLocali
 slat = ""; sfmtlat = "";
 ddlat = 0.0; ddd = 0.0; ddm = 0.0; dds = 0.0;
 if( sGetValue("BioPreferredCentroidLatitude:1") != "" ) {
-  slat = slat sRetPrint("BioPreferredCentroidLatitude:1") "° ";
+  slat = slat sRetPrint("BioPreferredCentroidLatitude:1") "\B0 ";
   ddd = sGetValue("BioPreferredCentroidLatitude:1");
 }
 if( sGetValue("BioPreferredCentroidLatitude:2") != "" ) {
@@ -266,7 +281,7 @@ printf( ",\"%s\",\"%s\"",	sdlat, slat ); 									#decimalLatitude,verbatimLatit
 slon = ""; sfmtlon = "";
 ddlon = 0.0; ddd = 0.0; ddm = 0.0; dds = 0.0;
 if( sGetValue("BioPreferredCentroidLongitude:1") != "" ) {
-  slon = slon sRetPrint("BioPreferredCentroidLongitude:1") "° ";
+  slon = slon sRetPrint("BioPreferredCentroidLongitude:1") "\B0 ";
   ddd = sGetValue("BioPreferredCentroidLongitude:1");
 }
 if( sGetValue("BioPreferredCentroidLongitude:2") != "" ) {
@@ -483,7 +498,15 @@ if( sGetValue("PreStorageMedium:1") != "" )
   sprep = sprep "ecatalogue.PreStorageMedium: " sRetPrint("PreStorageMedium:1", 1) "; ";
 printf( ",\"%s\"", 												sprep ); 	#preparations
 
-printf( ",\"%s\"", sRetPrint("MulMultiMediaRef:1") );						#associatedMedia
+#only print associated media if photographer and rightholder is available
+mmirn=sGetValue("MulMultiMediaRef:1");
+photographer=photographers[mmirn];
+rightholder=rightholders[irn];
+if((photographer == "") || (rightholder=="")) {mmirn="";photographer="";rightholder=""} else {mmirn=("http://collections.australianmuseum.net.au/amweb/objects/am/webmedia.php?irn=" mmirn)}; 
+
+printf( ",\"%s\"", mmirn );						#associatedMedia
+printf( ",\"%s\"", photographer );						#photographer
+printf( ",\"%s\"", rightholder );						#rightholder
 
 #add Coordinate Uncetrtainly in Metres
 #Matthew 16 Nov 2012
