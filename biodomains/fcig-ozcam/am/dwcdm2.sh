@@ -35,6 +35,10 @@
 
 clear
 
+pushd /home/emu/amweb
+source .profile # this sets various EMu variables and adds to PATH
+popd
+
 # should be the full path to directory containing this script (note, no trailing '/')
 DWCDM="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # the name of the single discipline export script in DWCDM
@@ -82,10 +86,15 @@ fi
 #exec > >(tee -a $DWCDM/$EXDIR/dwcdm2.sh.log) 2>&1
 # preferable to copy stdout & stderr to separate log files;
 # note: this log file will grow with every export
+echo '--------------------------------' $EXPORTDATE '--------------------------------' >> $DWCDM/log.dwcdm2
+echo '--------------------------------' $EXPORTDATE '--------------------------------' >> $DWCDM/logerr.dwcdm
 exec > >(tee -a $DWCDM/log.dwcdm2)
 exec 2> >(tee -a $DWCDM/logerr.dwcdm2)
 # as the script continues, logs will also made to the tmp export dir
 # this has the effect of the logs being bundled with the export
+echo some variables:
+set | grep TEX
+set | grep EMU
 
 # if required, export a list of disciplines - data exported will be confined to these
 #   if disciplines are ever added or you wish to export only a subset
@@ -276,18 +285,26 @@ rm -r $DWCDM/$EXDIR
 ##### 5 #####
 # send all exports
 
-echo "#$0#$(date +%H:%M:%S)# 5 - sending all files in $SFTPSTAGE"
-
-#need to test for success/failure on sftp before moving data to history
-lftp sftp://$SFTPUSER:$SFTPPASS@$SFTPIPADDR  -e "put $SFTPSTAGE/$EXDIR.tar.gz; bye"
-
-
-if [`cat $DWCDM/logerr.dwcdm2 | wc -l` -eq 0 ] # script ran without error (need better way to test for overall success)
+#sometimes for testing don't want to do this step so make it conditional on environment variable SKIPSFTP being empty:
+if test "x" == "x$SKIPSFTP"
 then
-  # save date and time of this export for use with next incremental export
+  echo "#$0#$(date +%H:%M:%S)# 5 - sending all files in $SFTPSTAGE"
+  lftp sftp://$SFTPUSER:$SFTPPASS@$SFTPIPADDR  -e "put $SFTPSTAGE/$EXDIR.tar.gz; bye"
+fi
+
+if [ `cat $DWCDM/$EXDIR/logerr.dwcdm2 | wc -l` -eq 0 ] # script ran without error (need better way to test for overall success) esp.need to test for success/failure on sftp before moving data to history
+then
+  # save date and time of the most recently inserted record for use with next incremental export
   touch amexport.last
   mv amexport.last amexport.last.bak
-  echo $EXPORTDATE > amexport.last
+  MAXADMDATEINSERTED=`echo 'max (select AdmDateInserted from ecatalogue)' | texql -R` # EMu has a near stroke trying to do this simple thing
+  MAXADMTIMEINSERTED=`echo "max ( select AdmTimeInserted from ecatalogue where AdmDateInserted = '"${MAXADMDATEINSERTED=}"' )" | texql -R | sed "s/'//g" `
+  #need to change dd/mm/yyyy to yyyy/mm/dd:
+  MAXADMYEARINSERTED=`echo $MAXADMDATEINSERTED | cut -f3 -d/`
+  MAXADMMONTHINSERTED=`echo $MAXADMDATEINSERTED | cut -f2 -d/`
+  MAXADMDAYINSERTED=`echo $MAXADMDATEINSERTED | cut -f1 -d/`
+  MAXADMDATEINSERTED=${MAXADMYEARINSERTED}/${MAXADMMONTHINSERTED}/${MAXADMDAYINSERTED}
+  echo $MAXADMDATEINSERTED $MAXADMTIMEINSERTED > amexport.last
 
   ##### 6 #####
   # move all exports to the history

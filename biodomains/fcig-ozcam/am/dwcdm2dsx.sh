@@ -58,6 +58,10 @@
 
 #clear
 
+pushd /home/emu/amweb
+source .profile # this sets various EMu variables and adds to PATH
+popd
+
 # the names of the awk scripts that do the ozcam-darwincore mapping
 EXAWKID=ozdc_id.awk
 EXAWKFULL=ozdc_full.awk
