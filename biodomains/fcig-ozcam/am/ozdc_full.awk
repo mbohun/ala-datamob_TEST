@@ -59,12 +59,16 @@ BEGIN {
 	mmirn=ft[1];
 	photographer=ft[2];
 	rightholder=ft[3];
+	relpath=ft[8];
 	photographers[mmirn]=photographer;
 	rightholders[mmirn]=rightholder;
+	relpaths[mmirn]=relpath;
 	}
 	close(image_file);
 	
-	for (irn in photographers) { printf("%s\t%s\n",irn,photographers[irn]) > (image_file ".check") } ;
+	for (irn in photographers) { printf("%s\t%s\n",irn,photographers[irn]) > (image_file ".photographers.txt") } ;
+	for (irn in rightholders) { printf("%s\t%s\n",irn,rightholders[irn]) > (image_file ".rightholders.txt") } ;
+	for (irn in relpaths) { printf("%s\t%s\n",irn,relpaths[irn]) > (image_file ".relpaths.txt") } ;
 
 	};
 
@@ -502,7 +506,8 @@ printf( ",\"%s\"", 												sprep ); 	#preparations
 mmirn=sGetValue("MulMultiMediaRef:1");
 photographer=photographers[mmirn];
 rightholder=rightholders[irn];
-if((photographer == "") || (rightholder=="")) {mmirn="";photographer="";rightholder=""} else {mmirn=("http://collections.australianmuseum.net.au/amweb/objects/am/webmedia.php?irn=" mmirn)}; 
+relpath=relpaths[mmirn]
+if((photographer == "") || (rightholder=="")) {mmirn="";photographer="";rightholder=""} else {mmirn=(department "-multimedia/" relpath)}; 
 
 printf( ",\"%s\"", mmirn );						#associatedMedia
 printf( ",\"%s\"", photographer );						#photographer

@@ -43,6 +43,8 @@ popd
 DWCDM="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # the name of the single discipline export script in DWCDM
 EXSCRIPT=dwcdm2dsx.sh
+# the name of the python script that parses the image file data
+IMAGESCRIPT=parse_texql_output.py
 # the names of the awk scripts that do the ozcam-darwincore mapping
 # note: you must change these variables in EXSCRIPT as well
 EXAWKID=ozdc_id.awk
@@ -167,9 +169,11 @@ echo "#$0#$(date +%H:%M:%S)# 1 -   '$DWCDM/$EXDIR'"
 # copy all the interesting stuff to the work dir
 cp $DWCDM/$0 $DWCDM/$EXDIR/
 cp $DWCDM/$EXSCRIPT $DWCDM/$EXDIR/
+cp $DWCDM/$IMAGESCRIPT $DWCDM/$EXDIR/
 cp $DWCDM/$EXAWKID $DWCDM/$EXDIR/
 cp $DWCDM/$EXAWKFULL $DWCDM/$EXDIR/
 cp $DWCDM/disciplines-list $DWCDM/$EXDIR/
+
 
 
 ##### 2 #####
@@ -298,7 +302,8 @@ then
   touch amexport.last
   mv amexport.last amexport.last.bak
   MAXADMDATEINSERTED=`echo 'max (select AdmDateInserted from ecatalogue)' | texql -R` # EMu has a near stroke trying to do this simple thing
-  MAXADMTIMEINSERTED=`echo "max ( select AdmTimeInserted from ecatalogue where AdmDateInserted = '"${MAXADMDATEINSERTED=}"' )" | texql -R | sed "s/'//g" `
+  echo MAXADMDATEINSERTED is $MAXADMDATEINSERTED
+  MAXADMTIMEINSERTED=`echo "max ( select AdmTimeInserted from ecatalogue where AdmDateInserted = \'${MAXADMDATEINSERTED=}\' )" | texql -R | sed "s/'//g" `
   #need to change dd/mm/yyyy to yyyy/mm/dd:
   MAXADMYEARINSERTED=`echo $MAXADMDATEINSERTED | cut -f3 -d/`
   MAXADMMONTHINSERTED=`echo $MAXADMDATEINSERTED | cut -f2 -d/`

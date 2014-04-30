@@ -156,7 +156,7 @@ cat "$FNAME_IRN$1" | awk -F"," -v department="$1" -v _dbg_out_file="$DWCDMROOT/$
 # make a file with emultimedia irn, rightholder and publisher fields
 echo "#$0#$(date +%H:%M:%S)# 3 - writing '$DWCDMROOT/$TMPEXD/$1$FNAME_EXDATA.images.tsv'"
 
-echo select irn, DocMimeFormat_tab, Multimedia, MulCreator_tab, DetPublisher, DocIdentifier_tab, DocFileSize_tab from emultimedia where true and \( exists \( SecDepartment_tab where \( SecDepartment contains \'$DISC\' \) \) \) and \( not \( MulCreator_tab = \[\] \) \) and \( not \( DetPublisher is NULL \) \) and \( AdmPublishWebNoPassword contains \'Yes\' \) and \( ChaFileSize \<= 500000 \) and \( DetPublisher = \'Australian Museum\' \)| texql | sed "s/^(//;s/')$//;s/,\['/\t/;s/'\],'/\t/;s/','/\t/" > $DWCDMROOT/$TMPEXD/$1$FNAME_EXDATA.images.tsv
+echo select irn, DocMimeFormat_tab, Multimedia, MulCreator_tab, DetPublisher, DocIdentifier_tab, DocFileSize_tab from emultimedia where true and \( exists \( SecDepartment_tab where \( SecDepartment contains \'$DISC\' \) \) \) and \( not \( MulCreator_tab = \[\] \) \) and \( AdmPublishWebNoPassword contains \'Yes\' \) and \( ChaFileSize \<= 500000 \) and \( DetPublisher = \'Australian Museum\' \) | texql | $DWCDMROOT/parse_texql_output.py | sed "s/^(//;s/')$//;s/,\['/\t/;s/'\],'/\t/;s/','/\t/" > $DWCDMROOT/$TMPEXD/$1$FNAME_EXDATA.images.tsv
 
 echo "#$0#$(date +%H:%M:%S)# 3 - writing '$DWCDMROOT/$TMPEXD/$1$FNAME_EXDATA.csv'"
 
@@ -184,6 +184,13 @@ echo "#$0#$(date +%H:%M:%S)# 3 - compressing to '$DWCDMROOT/$TMPEXD/$1$FNAME_EXD
 gzip -8 "$1$FNAME_EXDATA.csv"
 
 echo "#$0#$(date +%H:%M:%S)# 3 - finished"
+
+#copy images
+cut -f2 ${DISC}-dwcdata.images.tsv.relpaths.txt | sort -u > ${DISC}-dwcdata.images.relpaths.txt
+mkdir ${DISC}-multimedia
+ln -s /data/amweb/multimedia/ .
+tar -c -f - --files-from ${DISC}-dwcdata.images.relpaths.txt | tar -x -f - -C ${DISC}-multimedia
+rm -f multimedia
 
 echo $1 > $DWCDMROOT/$TMPEXD/dwcdm_finish
 
