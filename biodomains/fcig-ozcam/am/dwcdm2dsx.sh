@@ -154,15 +154,15 @@ cat "$FNAME_IRN$1" | awk -F"," -v department="$1" -v _dbg_out_file="$DWCDMROOT/$
 # for the filtered irn-only list, export data from emu
 
 # make a file with emultimedia irn, rightholder and publisher fields
-echo "#$0#$(date +%H:%M:%S)# 3 - writing '$DWCDMROOT/$TMPEXD/$1$FNAME_EXDATA.images.tsv'"
+echo "#$0#$(date +%H:%M:%S)# 3 - writing '$DWCDMROOT/$TMPEXD/$1.images.tsv'"
 
-echo select irn, DocMimeFormat_tab, Multimedia, MulCreator_tab, DetPublisher, DocIdentifier_tab, DocFileSize_tab from emultimedia where true and \( exists \( SecDepartment_tab where \( SecDepartment contains \'$DISC\' \) \) \) and \( not \( MulCreator_tab = \[\] \) \) and \( AdmPublishWebNoPassword contains \'Yes\' \) and \( DetPublisher = \'Australian Museum\' \) | texql | $DWCDMROOT/parse_texql_output.py | sed "s/^(//;s/')$//;s/,\['/\t/;s/'\],'/\t/;s/','/\t/" > $DWCDMROOT/$TMPEXD/$1$FNAME_EXDATA.images.tsv
+echo select irn, DocMimeFormat_tab, Multimedia, MulCreator_tab, DetPublisher, DocIdentifier_tab, DocFileSize_tab from emultimedia where true and \( exists \( SecDepartment_tab where \( SecDepartment contains \'$DISC\' \) \) \) and \( not \( MulCreator_tab = \[\] \) \) and \( AdmPublishWebNoPassword contains \'Yes\' \) and \( DetPublisher = \'Australian Museum\' \) | texql | $DWCDMROOT/parse_texql_output.py | sed "s/^(//;s/')$//;s/,\['/\t/;s/'\],'/\t/;s/','/\t/" > "$DWCDMROOT/$TMPEXD/$1.images.tsv"
 
 echo "#$0#$(date +%H:%M:%S)# 3 - writing '$DWCDMROOT/$TMPEXD/$1$FNAME_EXDATA.csv'"
 
 head -n 10 "$FNAME_IRNMOD$1" | texexport -k- -fdelimited -ms"+|" -md"" -mc ecatalogue > "$FNAME_HDR$1"
 
-cat "$FNAME_IRNMOD$1" | texexport -k- -fdelimited -ms"+|" -md"" -mc ecatalogue | awk -F"[+][|]" -v department="$1" -v _dbg_out_file="$DWCDMROOT/$TMPEXD/$EXAWKFULL.log" -v image_file="$DWCDMROOT/$TMPEXD/$1$FNAME_EXDATA.images.tsv" -f "$DWCDMROOT/$EXAWKFULL" | iconv -t UTF-8 -f ISO-8859-1 > "$1$FNAME_EXDATA.csv"
+cat "$FNAME_IRNMOD$1" | texexport -k- -fdelimited -ms"+|" -md"" -mc ecatalogue | awk -F"[+][|]" -v department="$1" -v _dbg_out_file="$DWCDMROOT/$TMPEXD/$EXAWKFULL.log" -v image_file="$DWCDMROOT/$TMPEXD/$1.images.tsv" -f "$DWCDMROOT/$EXAWKFULL" | iconv -t UTF-8 -f ISO-8859-1 > "$1$FNAME_EXDATA.csv"
 
 #check all fields have got some data:
 #this is slow so make it optional
@@ -186,11 +186,11 @@ gzip -8 "$1$FNAME_EXDATA.csv"
 echo "#$0#$(date +%H:%M:%S)# 3 - finished"
 
 #copy images
-cut -f2 ${DISC}-dwcdata.images.tsv.relpaths.txt | sort -u > ${DISC}-dwcdata.images.relpaths.txt
-mkdir ${DISC}-multimedia
+cut -f2 "${DISC}.images.tsv.relpaths.txt" | sort -u > "${DISC}.images.relpaths.txt"
+mkdir "${DISC}-multimedia"
 ln -s /data/amweb/multimedia/ .
-tar -c -f - --files-from ${DISC}-dwcdata.images.relpaths.txt | tar -x -f - -C ${DISC}-multimedia
+tar -c -f - --files-from ${DISC}-dwcdata.images.relpaths.txt | tar -x -f - -C "${DISC}-multimedia"
 rm -f multimedia
 
-echo $1 > $DWCDMROOT/$TMPEXD/dwcdm_finish
+echo "$1" > $DWCDMROOT/$TMPEXD/dwcdm_finish
 
