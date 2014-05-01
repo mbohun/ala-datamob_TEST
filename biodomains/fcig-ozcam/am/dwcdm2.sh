@@ -45,6 +45,8 @@ DWCDM="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 EXSCRIPT=dwcdm2dsx.sh
 # the name of the python script that parses the image file data
 IMAGESCRIPT=parse_texql_output.py
+# the name of the python script that parses the datetime info in irn- files
+DATESCRIPT=most_recent_date.py
 # the names of the awk scripts that do the ozcam-darwincore mapping
 # note: you must change these variables in EXSCRIPT as well
 EXAWKID=ozdc_id.awk
@@ -170,6 +172,7 @@ echo "#$0#$(date +%H:%M:%S)# 1 -   '$DWCDM/$EXDIR'"
 cp $DWCDM/$0 $DWCDM/$EXDIR/
 cp $DWCDM/$EXSCRIPT $DWCDM/$EXDIR/
 cp $DWCDM/$IMAGESCRIPT $DWCDM/$EXDIR/
+cp $DWCDM/$DATESCRIPT $DWCDM/$EXDIR/
 cp $DWCDM/$EXAWKID $DWCDM/$EXDIR/
 cp $DWCDM/$EXAWKFULL $DWCDM/$EXDIR/
 cp $DWCDM/disciplines-list $DWCDM/$EXDIR/
@@ -296,20 +299,12 @@ then
   lftp sftp://$SFTPUSER:$SFTPPASS@$SFTPIPADDR  -e "put $SFTPSTAGE/$EXDIR.tar.gz; bye"
 fi
 
-if [ `cat $DWCDM/$EXDIR/logerr.dwcdm2 | wc -l` -eq 0 ] # script ran without error (need better way to test for overall success) esp.need to test for success/failure on sftp before moving data to history
+if [ `cat $DWCDM/logerr.dwcdm2 | wc -l` -eq 0 ] # script ran without error (need better way to test for overall success) esp.need to test for success/failure on sftp before moving data to history
 then
   # save date and time of the most recently inserted record for use with next incremental export
   touch amexport.last
   mv amexport.last amexport.last.bak
-  MAXADMDATEINSERTED=`echo 'max (select AdmDateInserted from ecatalogue)' | texql -R` # EMu has a near stroke trying to do this simple thing
-  echo MAXADMDATEINSERTED is $MAXADMDATEINSERTED
-  MAXADMTIMEINSERTED=`echo "max ( select AdmTimeInserted from ecatalogue where AdmDateInserted = \'${MAXADMDATEINSERTED=}\' )" | texql -R | sed "s/'//g" `
-  #need to change dd/mm/yyyy to yyyy/mm/dd:
-  MAXADMYEARINSERTED=`echo $MAXADMDATEINSERTED | cut -f3 -d/`
-  MAXADMMONTHINSERTED=`echo $MAXADMDATEINSERTED | cut -f2 -d/`
-  MAXADMDAYINSERTED=`echo $MAXADMDATEINSERTED | cut -f1 -d/`
-  MAXADMDATEINSERTED=${MAXADMYEARINSERTED}/${MAXADMMONTHINSERTED}/${MAXADMDAYINSERTED}
-  echo $MAXADMDATEINSERTED $MAXADMTIMEINSERTED > amexport.last
+  ( cat $DWCDM/*/irn-[^m]* | cut -f2,3 -d, ; cat $DWCDM/*/irn-[^m]* | cut -f4,5 -d, ) | grep -v Adm| $DWCDM/$DATESCRIPT > amexport.last
 
   ##### 6 #####
   # move all exports to the history
