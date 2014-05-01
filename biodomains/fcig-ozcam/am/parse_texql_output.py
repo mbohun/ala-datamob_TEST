@@ -69,4 +69,4 @@ for line in sys.stdin:
 						print '\t'.join([irn, MulCreator_tab, DetPublisher, Multimedia, DocIdentifier, DocMimeFormat, DocFileSize, rel_path])
 						printed = True
 					else:
-						print >>sys.stderr, path, 'not found'
+						print path, 'not found'
