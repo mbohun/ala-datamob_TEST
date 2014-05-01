@@ -50,12 +50,12 @@ for line in sys.stdin:
 	assert len(DocMimeFormat_tab) == len(DocFileSize_tab)
 	files = zip(DocFileSize_tab,DocMimeFormat_tab,DocIdentifier_tab)
 	files.sort()
-	files.reverse()
+	files.reverse() #now sorted by filesize descending order
 	printed = False
 	for DocFileSize, DocMimeFormat, DocIdentifier in files:
 		if not printed:
 			DocFileSize = str(DocFileSize)
-			if DocMimeFormat in ['jpeg','png']:
+			if DocMimeFormat.lower() in ['jpeg','png'] and int(DocFileSize) <= MAXSIZE and int(DocFileSize) >= MINSIZE:
 				path = '/'.join( [ MEDIADIR , subdir, DocIdentifier ] )
 				rel_path = '/'.join( [ 'multimedia', subdir, DocIdentifier ] )
 				if exists(path):
