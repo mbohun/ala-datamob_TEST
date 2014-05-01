@@ -186,10 +186,10 @@ gzip -8 "$1$FNAME_EXDATA.csv"
 echo "#$0#$(date +%H:%M:%S)# 3 - finished"
 
 #copy images
-cut -f2 "${DISC}.images.tsv.relpaths.txt" | sort -u > "${DISC}.images.relpaths.txt"
-mkdir "${DISC}-multimedia"
+cut -f2 "${1}.images.tsv.relpaths.txt" | sort -u > "${1}.images.relpaths.txt"
+mkdir "${1}-multimedia"
 ln -s /data/amweb/multimedia/ .
-tar -c -f - --files-from ${DISC}-dwcdata.images.relpaths.txt | tar -x -f - -C "${DISC}-multimedia"
+tar -c -f - --files-from "${1}.images.relpaths.txt" | tar -x -f - -C "${1}-multimedia"
 rm -f multimedia
 
 echo "$1" > $DWCDMROOT/$TMPEXD/dwcdm_finish
