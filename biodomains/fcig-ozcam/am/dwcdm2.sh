@@ -226,7 +226,7 @@ while read -r DLLINE ;
 do
 echo "#$0#$(date +%H:%M:%S)# 3 - $EXSCRIPT '$DLLINE' '$DWCDM/$EXDIR' '$1'";
 
-sh -c "$EXSCRIPT '$DLLINE' '$DWCDM/$EXDIR' '$1'"
+bash -c "$EXSCRIPT '$DLLINE' '$DWCDM/$EXDIR' '$1'"
 
 # need to test here for success or failure...
 
