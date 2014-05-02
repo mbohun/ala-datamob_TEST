@@ -282,13 +282,6 @@ then
   exit $tarret
 
 fi
-# tell bash to continue logging only to the main log files
-exec > >(tee -a $DWCDM/log.dwcdm2)
-exec 2> >(tee -a $DWCDM/logerr.dwcdm2)
-
-# delete the source directory
-echo deleting "$DWCDM/$EXDIR"
-rm -r $DWCDM/$EXDIR
 
 ##### 5 #####
 # send all exports
@@ -314,6 +307,14 @@ then
 
   mv $SFTPSTAGE/* $SFTPHISTORY/
 fi
+
+# tell bash to continue logging only to the main log files
+exec > >(tee -a $DWCDM/log.dwcdm2)
+exec 2> >(tee -a $DWCDM/logerr.dwcdm2)
+
+# delete the source directory
+echo deleting "$DWCDM/$EXDIR"
+rm -r $DWCDM/$EXDIR
 
   echo "#$0#$(date +%H:%M:%S)# finished"
 
