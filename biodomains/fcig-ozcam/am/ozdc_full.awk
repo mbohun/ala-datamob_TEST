@@ -51,7 +51,7 @@ BEGIN {
 
 # 	when the header row is analysed, source indices will be stored in this array
 	#arrsSourceIndex[""] = "";
-
+image_relpath_file = "${1}.images.relpaths.txt"
 
 	while (getline < image_file)
 	{
@@ -507,11 +507,12 @@ mmirn=sGetValue("MulMultiMediaRef:1");
 photographer=photographers[mmirn];
 rightholder=rightholders[irn];
 relpath=relpaths[mmirn]
-if((photographer == "") || (rightholder=="")) {mmirn="";photographer="";rightholder=""} else {mmirn=(department "-multimedia/" relpath)}; 
+if((photographer == "") || (rightholder=="")) {mmirn="";photographer="";rightholder=""} else {mmirn=(department "-multimedia/" relpath);print relpath >image_relpath_file}; 
 
 printf( ",\"%s\"", mmirn );						#associatedMedia
 printf( ",\"%s\"", photographer );						#photographer
 printf( ",\"%s\"", rightholder );						#rightholder
+
 
 #add Coordinate Uncertainly in Metres
 #Matthew 16 Nov 2012

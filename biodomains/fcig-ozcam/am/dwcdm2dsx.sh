@@ -198,7 +198,7 @@ gzip -8 "$1$FNAME_EXDATA.csv"
 echo "#$0#$(date +%H:%M:%S)# 3 - finished"
 
 #copy images
-cut -f2 "${1}.images.tsv.relpaths.txt" | sort -u > "${1}.images.relpaths.txt"
+sort -u -o "${1}.images.relpaths.txt"  "${1}.images.relpaths.txt"
 mkdir "${1}-multimedia"
 ln -s /data/amweb/multimedia/ .
 tar -c -f - --files-from "${1}.images.relpaths.txt" | tar -x -f - -C "${1}-multimedia"
