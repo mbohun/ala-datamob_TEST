@@ -240,7 +240,7 @@ printf( ",\"%s\"",		sRetPrint("QuiPreciseLocationLocal:1") ); 			#verbatimLocali
 slat = ""; sfmtlat = "";
 ddlat = 0.0; ddd = 0.0; ddm = 0.0; dds = 0.0;
 if( sGetValue("BioPreferredCentroidLatitude:1") != "" ) {
-  slat = slat sRetPrint("BioPreferredCentroidLatitude:1") "\B0 ";
+  slat = slat sRetPrint("BioPreferredCentroidLatitude:1") "° ";
   ddd = sGetValue("BioPreferredCentroidLatitude:1");
 }
 if( sGetValue("BioPreferredCentroidLatitude:2") != "" ) {
@@ -285,7 +285,7 @@ printf( ",\"%s\",\"%s\"",	sdlat, slat ); 									#decimalLatitude,verbatimLatit
 slon = ""; sfmtlon = "";
 ddlon = 0.0; ddd = 0.0; ddm = 0.0; dds = 0.0;
 if( sGetValue("BioPreferredCentroidLongitude:1") != "" ) {
-  slon = slon sRetPrint("BioPreferredCentroidLongitude:1") "\B0 ";
+  slon = slon sRetPrint("BioPreferredCentroidLongitude:1") "° ";
   ddd = sGetValue("BioPreferredCentroidLongitude:1");
 }
 if( sGetValue("BioPreferredCentroidLongitude:2") != "" ) {
