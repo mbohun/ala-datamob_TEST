@@ -240,7 +240,7 @@ printf( ",\"%s\"",		sRetPrint("QuiPreciseLocationLocal:1") ); 			#verbatimLocali
 slat = ""; sfmtlat = "";
 ddlat = 0.0; ddd = 0.0; ddm = 0.0; dds = 0.0;
 if( sGetValue("BioPreferredCentroidLatitude:1") != "" ) {
-  slat = slat sRetPrint("BioPreferredCentroidLatitude:1") "° ";
+  slat = slat sRetPrint("BioPreferredCentroidLatitude:1") "\B0 ";
   ddd = sGetValue("BioPreferredCentroidLatitude:1");
 }
 if( sGetValue("BioPreferredCentroidLatitude:2") != "" ) {
@@ -285,7 +285,7 @@ printf( ",\"%s\",\"%s\"",	sdlat, slat ); 									#decimalLatitude,verbatimLatit
 slon = ""; sfmtlon = "";
 ddlon = 0.0; ddd = 0.0; ddm = 0.0; dds = 0.0;
 if( sGetValue("BioPreferredCentroidLongitude:1") != "" ) {
-  slon = slon sRetPrint("BioPreferredCentroidLongitude:1") "° ";
+  slon = slon sRetPrint("BioPreferredCentroidLongitude:1") "\B0 ";
   ddd = sGetValue("BioPreferredCentroidLongitude:1");
 }
 if( sGetValue("BioPreferredCentroidLongitude:2") != "" ) {
@@ -513,7 +513,7 @@ printf( ",\"%s\"", mmirn );						#associatedMedia
 printf( ",\"%s\"", photographer );						#photographer
 printf( ",\"%s\"", rightholder );						#rightholder
 
-#add Coordinate Uncetrtainly in Metres
+#add Coordinate Uncertainly in Metres
 #Matthew 16 Nov 2012
 qrv1 = sGetValue("QuiRadiusVerbatim:1"); # this should be e.g. "10km-100km" or "0m-10m" or "unknown". We just want to keep the higher value (assume its the last number given)
 printf( ",\"%s\"", qrv1 )	# verbatim uncertainty
