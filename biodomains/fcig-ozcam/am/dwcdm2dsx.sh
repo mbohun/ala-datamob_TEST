@@ -122,13 +122,19 @@ echo "#$0#$(date +%H:%M:%S)# 1 - writing '$DWCDMROOT/$TMPEXD/$FNAME_IRN$1'"
 # - you must also modify step 2 to ensure it reads AdmDate/AdmTimeModified values
 #   (see step 2 comments for more details)
 #
-# write the header row...
-echo irn_1,AdmDateInserted,AdmTimeInserted,AdmDateModified,AdmTimeModified,CatRegNumber,CatDiscipline > "$FNAME_IRN$1"
-# write the data rows... (note 'append':  >> irn-$1)
 #careful of the yucky ampersand:
 export DISC=`echo $1| sed 's/&/\\\&/g'`
-echo select irn_1,AdmDateInserted,AdmTimeInserted,AdmDateModified,AdmTimeModified,CatRegNumber from ecatalogue where exists \( SecDepartment_tab where SecDepartment = \'$DISC\' \) | texql -R | tr -d \'\(\) | sed "s/$/,$1/" >> "$FNAME_IRN$1"
 
+#re-use an irn file? (to speed up testing)
+if test "x" == "x$IRNFN" ; then
+	# write the header row...
+	echo irn_1,AdmDateInserted,AdmTimeInserted,AdmDateModified,AdmTimeModified,CatRegNumber,CatDiscipline > "$FNAME_IRN$1"
+	# write the data rows... (note 'append':  >> irn-$1)
+	echo select irn_1,AdmDateInserted,AdmTimeInserted,AdmDateModified,AdmTimeModified,CatRegNumber from ecatalogue where exists \( SecDepartment_tab where SecDepartment = \'$DISC\' \) | texql -R | tr -d \'\(\) | sed "s/$/,$1/" >> "$FNAME_IRN$1"
+else
+	echo reusing "${IRNFN}"
+	ln -s ${IRNFN} "$FNAME_IRN$1"
+fi
 
 ##### 2 #####
 # write the irn-list with last modified > $3 (texexport filter)
@@ -136,14 +142,19 @@ echo select irn_1,AdmDateInserted,AdmTimeInserted,AdmDateModified,AdmTimeModifie
 
 echo "#$0#$(date +%H:%M:%S)# 2 - writing '$DWCDMROOT/$TMPEXD/$FNAME_IRNMOD$1'"
 
-# (code is brittle and should do a lookup for values on field names)
-# this step requires AdmDateModified to be at $4, and AdmTimeModified to be at $5
-# if these data change positions, you need to modify the next line to reflect that:
-# - $4 reference: ... cnt++; idmparts = split($4,arrdm,"/") ...
-# - $5 reference: ... arrdm[1] " " $5 "\" +%s ...
-# - full line at time of comment: cat "irn-$1" | awk -F"," 'BEGIN{cnt=-1}; { if(-1 == cnt) cnt=0; else { cnt++; idmparts = split($4,arrdm,"/"); if(3 == idmparts) { scmd = "date -d \"" arrdm[3] "/" arrdm[2] "/" arrdm[1] " " $5 "\" +%s 2>/dev/null"; printf($1 " "); (ssecs = system(scmd)); } } };' |  awk -v ssince="$3" -v dtsince=$(date -d "$3" +%s 2>/dev/null) -F' ' 'BEGIN{if(!dtsince || ("" == ssince))dtsince=0;};{if($2>dtsince) print $1; };' > "irn-mod-$1"
-#
-cat "$FNAME_IRN$1" | awk -F"," 'BEGIN{cnt=-1}; { if(-1 == cnt) cnt=0; else { cnt++; idmparts = split($4,arrdm,"/"); if(3 == idmparts) { scmd = "date -d \"" arrdm[3] "/" arrdm[2] "/" arrdm[1] " " $5 "\" +%s 2>/dev/null"; printf($1 " "); (ssecs = system(scmd)); } } };' |  awk -v ssince="$3" -v dtsince=$(date -d "$3" +%s 2>/dev/null) -F' ' 'BEGIN{if(!dtsince || ("" == ssince))dtsince=0;};{if($2>dtsince) print $1; };' > "$FNAME_IRNMOD$1"
+#re-use an irn mod file? (to speed up testing)
+if test "x" == "x$IRNMODFN" ; then
+	# (code is brittle and should do a lookup for values on field names)
+	# this step requires AdmDateModified to be at $4, and AdmTimeModified to be at $5
+	# if these data change positions, you need to modify the next line to reflect that:
+	# - $4 reference: ... cnt++; idmparts = split($4,arrdm,"/") ...
+	# - $5 reference: ... arrdm[1] " " $5 "\" +%s ...
+	# - full line at time of comment: cat "irn-$1" | awk -F"," 'BEGIN{cnt=-1}; { if(-1 == cnt) cnt=0; else { cnt++; idmparts = split($4,arrdm,"/"); if(3 == idmparts) { scmd = "date -d \"" arrdm[3] "/" arrdm[2] "/" arrdm[1] " " $5 "\" +%s 2>/dev/null"; printf($1 " "); (ssecs = system(scmd)); } } };' |  awk -v ssince="$3" -v dtsince=$(date -d "$3" +%s 2>/dev/null) -F' ' 'BEGIN{if(!dtsince || ("" == ssince))dtsince=0;};{if($2>dtsince) print $1; };' > "irn-mod-$1"
+	#
+	cat "$FNAME_IRN$1" | awk -F"," 'BEGIN{cnt=-1}; { if(-1 == cnt) cnt=0; else { cnt++; idmparts = split($4,arrdm,"/"); if(3 == idmparts) { scmd = "date -d \"" arrdm[3] "/" arrdm[2] "/" arrdm[1] " " $5 "\" +%s 2>/dev/null"; printf($1 " "); (ssecs = system(scmd)); } } };' |  awk -v ssince="$3" -v dtsince=$(date -d "$3" +%s 2>/dev/null) -F' ' 'BEGIN{if(!dtsince || ("" == ssince))dtsince=0;};{if($2>dtsince) print $1; };' > "$FNAME_IRNMOD$1"
+else
+	echo reusing "${IRNMODFN}"
+	ln -s ${IRNMODFN} "$FNAME_IRNMOD$1"
 
 echo "#$0#$(date +%H:%M:%S)# 2 - writing '$DWCDMROOT/$TMPEXD/$1$FNAME_EXID.csv.gz'"
 
