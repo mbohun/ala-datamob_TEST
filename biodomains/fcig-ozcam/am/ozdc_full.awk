@@ -51,7 +51,7 @@ BEGIN {
 
 # 	when the header row is analysed, source indices will be stored in this array
 	#arrsSourceIndex[""] = "";
-image_relpath_file = "${1}.images.relpaths.txt"
+image_relpath_file = "images.relpaths.txt"
 
 	while (getline < image_file)
 	{
