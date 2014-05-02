@@ -300,7 +300,7 @@ then
   lftp sftp://$SFTPUSER:$SFTPPASS@$SFTPIPADDR  -e "put $SFTPSTAGE/$EXDIR.tar.gz; bye"
 fi
 
-if [ `cat $DWCDM/logerr.dwcdm2 | wc -l` -eq 0 ] # script ran without error (need better way to test for overall success) esp.need to test for success/failure on sftp before moving data to history
+if [ `cat $DWCDM/$EXDIR/logerr.dwcdm2 | wc -l` -eq 0 ] # script ran without error (need better way to test for overall success) esp.need to test for success/failure on sftp before moving data to history
 then
   # save date and time of the most recently inserted record for use with next incremental export
   touch amexport.last
