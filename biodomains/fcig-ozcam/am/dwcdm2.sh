@@ -287,6 +287,7 @@ exec > >(tee -a $DWCDM/log.dwcdm2)
 exec 2> >(tee -a $DWCDM/logerr.dwcdm2)
 
 # delete the source directory
+echo deleting "$DWCDM/$EXDIR"
 rm -r $DWCDM/$EXDIR
 
 ##### 5 #####
@@ -304,7 +305,7 @@ then
   # save date and time of the most recently inserted record for use with next incremental export
   touch amexport.last
   mv amexport.last amexport.last.bak
-  ( cat $DWCDM/*/irn-[^m]* | cut -f2,3 -d, ; cat $DWCDM/*/irn-[^m]* | cut -f4,5 -d, ) | grep -v Adm| $DWCDM/$DATESCRIPT > amexport.last
+  ( cat $DWCDM/$EXDIR/*/irn-[^m]* | cut -f2,3 -d, ; cat $DWCDM/$EXDIR/*/irn-[^m]* | cut -f4,5 -d, ) | grep -v Adm| $DWCDM/$DATESCRIPT > amexport.last
 
   ##### 6 #####
   # move all exports to the history
