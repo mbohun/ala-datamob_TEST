@@ -155,6 +155,7 @@ if test "x" == "x$IRNMODFN" ; then
 else
 	echo reusing "${IRNMODFN}"
 	ln -s ${IRNMODFN} "$FNAME_IRNMOD$1"
+fi
 
 echo "#$0#$(date +%H:%M:%S)# 2 - writing '$DWCDMROOT/$TMPEXD/$1$FNAME_EXID.csv.gz'"
 
