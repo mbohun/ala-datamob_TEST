@@ -46,27 +46,26 @@ for line in sys.stdin:
 	DocFileSize_tab = [ int(i) for i in DocFileSize_tab ]
 	#print DocFileSize_tab
 
-	assert len(DocMimeFormat_tab) == len(DocIdentifier_tab)
-	assert len(DocMimeFormat_tab) == len(DocFileSize_tab)
-	files = zip(DocFileSize_tab,DocMimeFormat_tab,DocIdentifier_tab)
-	files.sort()
-	files.reverse() #now sorted by filesize descending order
-	printed = False
-	for DocFileSize, DocMimeFormat, DocIdentifier in files:
-		if not printed:
-			DocFileSize = str(DocFileSize)
-			if DocMimeFormat.lower() in ['jpeg','png'] and int(DocFileSize) <= MAXSIZE and int(DocFileSize) >= MINSIZE:
-				path = '/'.join( [ MEDIADIR , subdir, DocIdentifier ] )
-				rel_path = '/'.join( [ 'multimedia', subdir, DocIdentifier ] )
-				if exists(path):
-					print '\t'.join([irn, MulCreator_tab, DetPublisher, Multimedia, DocIdentifier, DocMimeFormat, DocFileSize, rel_path])
-					printed = True
-				else:
-					path = path.replace('JPG', 'jpg')
-					DocIdentifier = DocIdentifier.replace('JPG', 'jpg')
-					rel_path = rel_path.replace('JPG', 'jpg')
+	if len(DocMimeFormat_tab) == len(DocIdentifier_tab) and len(DocMimeFormat_tab) == len(DocFileSize_tab):
+		files = zip(DocFileSize_tab,DocMimeFormat_tab,DocIdentifier_tab)
+		files.sort()
+		files.reverse() #now sorted by filesize descending order
+		printed = False
+		for DocFileSize, DocMimeFormat, DocIdentifier in files:
+			if not printed:
+				DocFileSize = str(DocFileSize)
+				if DocMimeFormat.lower() in ['jpeg','png'] and int(DocFileSize) <= MAXSIZE and int(DocFileSize) >= MINSIZE:
+					path = '/'.join( [ MEDIADIR , subdir, DocIdentifier ] )
+					rel_path = '/'.join( [ 'multimedia', subdir, DocIdentifier ] )
 					if exists(path):
 						print '\t'.join([irn, MulCreator_tab, DetPublisher, Multimedia, DocIdentifier, DocMimeFormat, DocFileSize, rel_path])
 						printed = True
 					else:
-						print path, 'not found'
+						path = path.replace('JPG', 'jpg')
+						DocIdentifier = DocIdentifier.replace('JPG', 'jpg')
+						rel_path = rel_path.replace('JPG', 'jpg')
+						if exists(path):
+							print '\t'.join([irn, MulCreator_tab, DetPublisher, Multimedia, DocIdentifier, DocMimeFormat, DocFileSize, rel_path])
+							printed = True
+						else:
+							print path, 'not found'
