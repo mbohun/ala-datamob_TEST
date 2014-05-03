@@ -168,7 +168,7 @@ cat "$FNAME_IRN$1" | awk -F"," -v department="$1" -v _dbg_out_file="$DWCDMROOT/$
 # make a file with emultimedia irn, rightholder and publisher fields
 echo "#$0#$(date +%H:%M:%S)# 3 - writing '$DWCDMROOT/$TMPEXD/$1.images.tsv'"
 
-echo select irn, DocMimeFormat_tab, Multimedia, MulCreator_tab, DetPublisher, DocIdentifier_tab, DocFileSize_tab from emultimedia where true and \( exists \( SecDepartment_tab where \( SecDepartment contains \'$DISC\' \) \) \) and \( not \( MulCreator_tab = \[\] \) \) and \( AdmPublishWebNoPassword contains \'Yes\' \) and \( DetPublisher = \'Australian Museum\' \) | texql | $DWCDMROOT/parse_texql_output.py | sed "s/^(//;s/')$//;s/,\['/\t/;s/'\],'/\t/;s/','/\t/" > "$DWCDMROOT/$TMPEXD/$1.images.tsv"
+echo select irn, DocMimeFormat_tab, Multimedia, MulCreator_tab, DetPublisher, DocIdentifier_tab, DocFileSize_tab from emultimedia where true and \( exists \( SecDepartment_tab where \( SecDepartment contains \'$DISC\' \) \) \) and \( not \( MulCreator_tab = \[\] \) \) and \( AdmPublishWebNoPassword contains \'Yes\' \) and \( DetPublisher = \'Australian Museum\' \) and Multimedia is not NULL | texql | $DWCDMROOT/parse_texql_output.py | sed "s/^(//;s/')$//;s/,\['/\t/;s/'\],'/\t/;s/','/\t/" > "$DWCDMROOT/$TMPEXD/$1.images.tsv"
 
 echo "#$0#$(date +%H:%M:%S)# 3 - writing '$DWCDMROOT/$TMPEXD/$1$FNAME_EXDATA.csv'"
 
