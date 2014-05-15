@@ -51,7 +51,26 @@ BEGIN {
 
 # 	when the header row is analysed, source indices will be stored in this array
 	#arrsSourceIndex[""] = "";
-};
+image_relpath_file = "images.relpaths.txt"
+
+	while (getline < image_file)
+	{
+	split($0,ft,"\t");
+	mmirn=ft[1];
+	photographer=ft[2];
+	rightholder=ft[3];
+	relpath=ft[8];
+	photographers[mmirn]=photographer;
+	rightholders[mmirn]=rightholder;
+	relpaths[mmirn]=relpath;
+	}
+	close(image_file);
+	
+	for (irn in photographers) { printf("%s\t%s\n",irn,photographers[irn]) > (image_file ".photographers.txt") } ;
+	for (irn in rightholders) { printf("%s\t%s\n",irn,rightholders[irn]) > (image_file ".rightholders.txt") } ;
+	for (irn in relpaths) { printf("%s\t%s\n",irn,relpaths[irn]) > (image_file ".relpaths.txt") } ;
+
+	};
 
 # for each line:
 #     if it the header row, sets the mapping & field count
@@ -87,7 +106,7 @@ printf( "\nWriting valid records as mapped" ) >> _dbg_out_file;
 }
 
 # print header [search file for '^print.*#([a-zA-Z,]*?)\r'
-printf( "\"institutionCode\",\"basisOfRecord\",\"dcterms:type\",\"collectionCode\",\"scientificName\",\"acceptedNameUsage\",\"nameAccordingTo\",\"typeStatus\",\"kingdom\",\"phylum\",\"class\",\"order\",\"family\",\"genus\",\"specificEpithet\",\"vernacularName\",\"verbatimTaxonRank\",\"identifiedBy\",\"dateIdentified\",\"identificationRemarks\",\"waterBody\",\"country\",\"stateProvince\",\"county\",\"verbatimLocality\",\"decimalLatitude\",\"verbatimLatitude\",\"decimalLongitude\",\"verbatimLongitude\",\"coordinatePrecision\",\"verbatimCoordinateSystem\",\"locationRemarks\",\"eventID\",\"eventDate\",\"verbatimEventDate\",\"eventTime\",\"dcterms:modified\",\"samplingProtocol\",\"habitat\",\"occurrenceID\",\"catalogNumber\",\"recordedBy\",\"otherCatalogNumbers\",\"sex\",\"preparations\",\"associatedMedia\",\"verbatimUncertainty\",\"coordinateUncertaintyInMeters\"" );
+printf( "\"institutionCode\",\"basisOfRecord\",\"dcterms:type\",\"collectionCode\",\"scientificName\",\"acceptedNameUsage\",\"nameAccordingTo\",\"typeStatus\",\"kingdom\",\"phylum\",\"class\",\"order\",\"family\",\"genus\",\"specificEpithet\",\"vernacularName\",\"verbatimTaxonRank\",\"identifiedBy\",\"dateIdentified\",\"identificationRemarks\",\"waterBody\",\"country\",\"stateProvince\",\"county\",\"verbatimLocality\",\"decimalLatitude\",\"verbatimLatitude\",\"decimalLongitude\",\"verbatimLongitude\",\"coordinatePrecision\",\"verbatimCoordinateSystem\",\"locationRemarks\",\"eventID\",\"eventDate\",\"verbatimEventDate\",\"eventTime\",\"dcterms:modified\",\"samplingProtocol\",\"habitat\",\"occurrenceID\",\"catalogNumber\",\"recordedBy\",\"otherCatalogNumbers\",\"sex\",\"preparations\",\"associatedMedia\",\"photographer\",\"rightsHolder\",\"verbatimUncertainty\",\"coordinateUncertaintyInMeters\"" );
 printf( "\n" );
 
   }
@@ -483,9 +502,19 @@ if( sGetValue("PreStorageMedium:1") != "" )
   sprep = sprep "ecatalogue.PreStorageMedium: " sRetPrint("PreStorageMedium:1", 1) "; ";
 printf( ",\"%s\"", 												sprep ); 	#preparations
 
-printf( ",\"%s\"", sRetPrint("MulMultiMediaRef:1") );						#associatedMedia
+#only print associated media if photographer and rightholder is available
+mmirn=sGetValue("MulMultiMediaRef:1");
+photographer=photographers[mmirn];
+rightholder=rightholders[irn];
+relpath=relpaths[mmirn]
+if((photographer == "") || (rightholder=="")) {mmirn="";photographer="";rightholder=""} else {mmirn=(department "-multimedia/" relpath);print relpath >image_relpath_file}; 
 
-#add Coordinate Uncetrtainly in Metres
+printf( ",\"%s\"", mmirn );						#associatedMedia
+printf( ",\"%s\"", photographer );						#photographer
+printf( ",\"%s\"", rightholder );						#rightholder
+
+
+#add Coordinate Uncertainly in Metres
 #Matthew 16 Nov 2012
 qrv1 = sGetValue("QuiRadiusVerbatim:1"); # this should be e.g. "10km-100km" or "0m-10m" or "unknown". We just want to keep the higher value (assume its the last number given)
 printf( ",\"%s\"", qrv1 )	# verbatim uncertainty
@@ -612,4 +641,5 @@ function sGetValue( sind ) {
 
 	return s;
 }
+
 
